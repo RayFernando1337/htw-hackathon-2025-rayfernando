@@ -1,0 +1,19 @@
+---
+globs: app/**/*.tsx,components/**/*.tsx
+description: Conventions for shadcn/ui components and Tailwind usage in this repo
+---
+
+# shadcn/ui & Tailwind conventions
+
+- **cn utility**: Use `cn` from `lib/utils.ts` for class merging.
+- **Class names**: Prefer semantic utility classes; avoid long arbitrary values. Keep component styles colocated.
+- **Component additions**: Use shadcn generator via `bunx shadcn@latest add <component>`.
+- **Radix primitives**: Keep accessible structure; expose `className` passthrough on root as needed.
+- **Design tokens**: Follow Tailwind v4 utilities and `next-themes` for dark mode; avoid inline styles.
+- **File placement**: New primitives under `components/ui/`; higher-level composites under `components/`.
+- **Do not** rename exported component symbols without refactoring all imports.
+
+References:
+
+- `lib/utils.ts` (mdc:lib/utils.ts)
+- `components/ui/*` (mdc:components/ui)

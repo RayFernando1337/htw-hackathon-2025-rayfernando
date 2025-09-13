@@ -1,0 +1,13 @@
+---
+globs: app/**/*.tsx,components/**/*.tsx
+description: Frontend patterns for Convex React hooks
+---
+
+# Frontend Convex hooks
+
+- **Provider**: Wrap app tree with `ConvexProviderWithClerk` (see `components/ConvexClientProvider.tsx`).
+- **Reads**: Use `useQuery(api.module.fn, args)` for all reads; handle `undefined` during initial load.
+- **Writes**: Use `useMutation(api.module.fn)` and call in event handlers.
+- **Realtime**: Components auto-subscribe to queries; avoid manual polling.
+- **Errors**: Surface mutation errors via UI toasts (e.g., `sonner`).
+- **Types**: Import function references from `convex/_generated/api`.

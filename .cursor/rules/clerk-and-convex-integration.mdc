@@ -1,0 +1,21 @@
+---
+globs: convex/http.ts,convex/**/*.ts,app/**/*.tsx
+description: Clerk authentication patterns and Convex webhook integration
+---
+
+# Clerk + Convex integration
+
+- **Middleware**: Protect `/dashboard(.*)` via `clerkMiddleware` (see `middleware.ts`).
+- **Client provider**: Use `ConvexProviderWithClerk` with `useAuth` and `NEXT_PUBLIC_CONVEX_URL`.
+- **HTTP webhook**: Verify via Svix in `convex/http.ts` and route to internal mutations:
+  - `users.upsertFromClerk` on `user.created`/`user.updated`
+  - `users.deleteFromClerk` on `user.deleted`
+  - `paymentAttempts.savePaymentAttempt` on `paymentAttempt.updated`
+- **Secrets**: `CLERK_WEBHOOK_SECRET` required for verification.
+- **Do not** call actions from the browser; trigger via mutations as needed.
+
+References:
+
+- `convex/http.ts` (mdc:convex/http.ts)
+- `components/ConvexClientProvider.tsx` (mdc:components/ConvexClientProvider.tsx)
+- `middleware.ts` (mdc:middleware.ts)

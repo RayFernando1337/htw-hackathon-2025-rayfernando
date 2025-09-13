@@ -1,0 +1,23 @@
+---
+alwaysApply: false
+description: HTW Event Platform MVP guardrails and feature lifecycle
+---
+
+# HTW Event Platform MVP
+
+- The single source of truth is `documentation/features/planned/htw-event-platform-mvp-plan.md`.
+- Implement phases in order (0 → 1 → 2 → 3 → 4). Do not start later phases early.
+- Match field names exactly to the plan's Fillout mapping.
+- Enforce server-side state machine transitions and permissions.
+- Use Convex subscriptions for realtime updates.
+
+Docs lifecycle (see AGENTS):
+
+- Planning spec lives under `documentation/features/planned/`.
+- When active, move spec to `documentation/features/active/` and add `-progress.md`.
+- When complete, move both to `documentation/features/completed/[feature-name]/`.
+
+References:
+
+- MVP Plan (mdc:documentation/features/planned/htw-event-platform-mvp-plan.md)
+- Agents rules (mdc:documentation/AGENTS.md)

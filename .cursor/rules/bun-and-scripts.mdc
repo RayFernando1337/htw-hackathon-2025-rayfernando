@@ -1,0 +1,31 @@
+---
+alwaysApply: true
+description: Use Bun and Bunx for package management and scripts in this repo
+---
+
+# Bun usage guidelines
+
+This project uses Bun. Prefer Bun over npm/yarn/pnpm for all package and script operations.
+
+- **Run scripts**
+  - `bun run dev` → Next dev
+  - `bun run build` → Next build
+  - `bun run start` → Next start
+  - `bun run lint` → Lint
+
+- **Add deps**
+  - `bun add <pkg>`
+  - `bun add -d <pkg>` for devDeps
+
+- **Ad-hoc CLIs**
+  - Use `bunx` for generators and one-off CLIs
+  - Example (shadcn): `bunx --yes shadcn@latest add button`
+
+- **Non-interactive**
+  - Default to non-interactive flags in CI/agents (e.g., `--yes` when supported)
+
+- **Lockfile**
+  - `bun.lock` is the source of truth; do not introduce other lockfiles
+
+- **Environment**
+  - Ensure Bun is installed locally/CI. Node scripts should be Bun-compatible.

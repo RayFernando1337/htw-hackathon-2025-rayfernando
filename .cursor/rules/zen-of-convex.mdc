@@ -1,0 +1,14 @@
+---
+alwaysApply: false
+description: Apply Zen of Convex practices for performance and architecture
+---
+
+# Zen of Convex highlights
+
+- **Use queries for reads**; let the sync engine manage cache/consistency.
+- **Keep sync functions fast** (<100ms, few hundred records max).
+- **Use actions sparingly** for external integrations and background work.
+- **Don’t overdo client state**; bind components to queries.
+- **Record progress** incrementally when actions orchestrate workflows.
+
+Source: The Zen of Convex (mdc:https://docs.convex.dev/understanding/zen)
