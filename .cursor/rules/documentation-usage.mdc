@@ -1,0 +1,34 @@
+---
+alwaysApply: false
+description: How to use the /documentation workspace, feature lifecycle, and file conventions
+---
+
+# Documentation workspace usage
+
+- **Start here**: Read [documentation/README.md](mdc:documentation/README.md) for structure and standards.
+- **Lifecycle authority**: Follow [documentation/AGENTS.md](mdc:documentation/AGENTS.md) for feature lifecycle moves.
+
+## Feature lifecycle
+
+1. Planning → `/documentation/features/planned/[feature-name]-spec.md`
+2. Active → move spec to `/documentation/features/active/` and add `[feature-name]-progress.md`
+3. Completed → create `/documentation/features/completed/[feature-name]/` and move both files there
+
+## Naming conventions
+
+- Kebab-case file names
+- Specs end with `-spec.md`
+- Progress trackers end with `-progress.md`
+
+## Agent checklist when moving features
+
+- Create completed folder: `/documentation/features/completed/[feature-name]/`
+- Move spec and progress files from `active/` into the folder
+- Update relative links between spec/progress if needed
+- Search repo for references to old active path and update
+
+## Where to look
+
+- Current work: `/documentation/features/active/`
+- Completed patterns: `/documentation/features/completed/`
+- Future work: `/documentation/features/planned/`
