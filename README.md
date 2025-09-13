@@ -1,334 +1,384 @@
-# Starter.diy - Elite Next.js SaaS Starter Kit
+# HTW Event Platform MVP Plan
 
-A modern, production-ready SaaS starter template for building full-stack applications using Next.js 15, Convex, Clerk, and Clerk Billing. The easiest way to start accepting payments with beautiful UI and seamless integrations.
+## Problem → Outcome
 
-[🌐 Live Demo](https://elite-next-clerk-convex-starter.vercel.app/) – Try the app in your browser!
+**Problem:** Community event hosts struggle to plan and execute great events. Staff waste time on fragmented review processes across Fillout, email, text, Google Docs, and Lu.ma.
 
+**Outcome:**
 
-## Features
+- Single source of truth for event submission → review → approval
+- Field-level feedback that eliminates ambiguous email threads
+- Guided checklists that prevent hosts from missing critical steps
 
-- 🚀 **Next.js 15 with App Router** - Latest React framework with server components
-- ⚡️ **Turbopack** - Ultra-fast development with hot module replacement
-- 🎨 **TailwindCSS v4** - Modern utility-first CSS with custom design system
-- 🔐 **Clerk Authentication** - Complete user management with social logins
-- 💳 **Clerk Billing** - Integrated subscription management and payments
-- 🗄️ **Convex Real-time Database** - Serverless backend with real-time sync
-- 🛡️ **Protected Routes** - Authentication-based route protection
-- 💰 **Payment Gating** - Subscription-based content access
-- 🎭 **Beautiful 404 Page** - Custom animated error page
-- 🌗 **Dark/Light Theme** - System-aware theme switching
-- 📱 **Responsive Design** - Mobile-first approach with modern layouts
-- ✨ **Custom Animations** - React Bits and Framer Motion effects
-- 🧩 **shadcn/ui Components** - Modern component library with Radix UI
-- 📊 **Interactive Dashboard** - Complete admin interface with charts
-- �� **Webhook Integration** - Automated user and payment sync
-- 🚢 **Vercel Ready** - One-click deployment
+**Success Signals:**
 
-## Tech Stack
-
-### Frontend
-- **Next.js 15** - React framework with App Router
-- **TailwindCSS v4** - Utility-first CSS framework
-- **shadcn/ui** - Modern component library
-- **Radix UI** - Accessible component primitives
-- **Framer Motion** - Smooth animations and transitions
-- **Motion Primitives** - Advanced animation components
-- **Lucide React & Tabler Icons** - Beautiful icon libraries
-- **Recharts** - Data visualization components
-- **React Bits** - Custom animation components
-
-### Backend & Services
-- **Convex** - Real-time database and serverless functions
-- **Clerk** - Authentication and user management
-- **Clerk Billing** - Subscription billing and payments
-- **Svix** - Webhook handling and validation
-
-### Development & Deployment
-- **TypeScript** - Type safety throughout
-- **Vercel** - Deployment platform
-- **Turbopack** - Fast build tool
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ 
-- Clerk account for authentication and billing
-- Convex account for database
-
-### Installation
-
-1. Download and set up the starter template:
-
-```bash
-# Download the template files to your project directory
-# Then navigate to your project directory and install dependencies
-npm install #or pnpm / yarn / bun
-```
-
-2. Set up your environment variables:
-
-```bash
-cp .env.example .env.local
-```
-
-3. Configure your environment variables in `.env.local`:
-
-3a. run `npx convex dev` or `bunx convex dev` to configure your convex database variables
-
-```bash
-# Clerk Authentication & Billing
-# Get these from your Clerk dashboard at https://dashboard.clerk.com
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_publishable_key_here
-CLERK_SECRET_KEY=sk_test_your_clerk_secret_key_here
-
-# Clerk Frontend API URL (from JWT template - see step 5)
-NEXT_PUBLIC_CLERK_FRONTEND_API_URL=https://your-clerk-frontend-api-url.clerk.accounts.dev
-
-# Clerk Redirect URLs
-NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard
-NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/dashboard
-NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
-NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard
-```
-
-4. Initialize Convex:
-
-```bash
-npx convex dev
-```
-
-5. Set up Clerk JWT Template:
-   - Go to your Clerk dashboard
-   - Navigate to JWT Templates
-   - Create a new template with name "convex"
-   - Copy the Issuer URL - this becomes your `NEXT_PUBLIC_CLERK_FRONTEND_API_URL`
-   - Add this URL to both your `.env.local` and Convex environment variables
-
-6. Set up Convex environment variables in your Convex dashboard:
-
-```bash
-# In Convex Dashboard Environment Variables
-CLERK_WEBHOOK_SECRET=whsec_your_webhook_secret_here
-NEXT_PUBLIC_CLERK_FRONTEND_API_URL=https://your-clerk-frontend-api-url.clerk.accounts.dev
-```
-
-7. Set up Clerk webhooks (in Clerk Dashboard, not Convex):
-   - Go to your Clerk dashboard → Webhooks section
-   - Create a new endpoint with URL: `https://your-deployed-app.com/api/clerk-users-webhook`
-   - Enable these events:
-     - `user.created` - Syncs new users to Convex
-     - `user.updated` - Updates user data in Convex
-     - `user.deleted` - Removes users from Convex
-     - `paymentAttempt.updated` - Tracks subscription payments
-   - Copy the webhook signing secret (starts with `whsec_`)
-   - Add it to your Convex dashboard environment variables as `CLERK_WEBHOOK_SECRET`
-   
-   **Note**: The webhook URL `/clerk-users-webhook` is handled by Convex's HTTP router, not Next.js. Svix is used to verify webhook signatures for security.
-
-8. Configure Clerk Billing:
-   - Set up your pricing plans in Clerk dashboard
-   - Configure payment methods and billing settings
-
-### Development
-
-Start the development server:
-
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:3000`.
-
-## Architecture
-
-### Key Routes
-- `/` - Beautiful landing page with pricing
-- `/dashboard` - Protected user dashboard
-- `/dashboard/payment-gated` - Subscription-protected content
-- `/clerk-users-webhook` - Clerk webhook handler
-
-### Authentication Flow
-- Seamless sign-up/sign-in with Clerk
-- Automatic user sync to Convex database
-- Protected routes with middleware
-- Social login support
-- Automatic redirects to dashboard after auth
-
-### Payment Flow
-- Custom Clerk pricing table component
-- Subscription-based access control
-- Real-time payment status updates
-- Webhook-driven payment tracking
-
-### Database Schema
-```typescript
-// Users table
-users: {
-  name: string,
-  externalId: string // Clerk user ID
-}
-
-// Payment attempts tracking
-paymentAttempts: {
-  payment_id: string,
-  userId: Id<"users">,
-  payer: { user_id: string },
-  // ... additional payment data
-}
-```
-
-## Project Structure
-
-```
-├── app/
-│   ├── (landing)/          # Landing page components
-│   │   ├── hero-section.tsx
-│   │   ├── features-one.tsx
-│   │   ├── pricing.tsx
-│   │   └── ...
-│   ├── dashboard/          # Protected dashboard
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   └── payment-gated/
-│   ├── globals.css         # Global styles
-│   ├── layout.tsx          # Root layout
-│   └── not-found.tsx       # Custom 404 page
-├── components/
-│   ├── ui/                 # shadcn/ui components
-│   ├── custom-clerk-pricing.tsx
-│   ├── theme-provider.tsx
-│   └── ...
-├── convex/                 # Backend functions
-│   ├── schema.ts           # Database schema
-│   ├── users.ts            # User management
-│   ├── paymentAttempts.ts  # Payment tracking
-│   └── http.ts             # Webhook handlers
-├── lib/
-│   └── utils.ts            # Utility functions
-└── middleware.ts           # Route protection
-```
-
-## Key Components
-
-### Landing Page
-- **Hero Section** - Animated hero with CTAs
-- **Features Section** - Interactive feature showcase
-- **Pricing Table** - Custom Clerk billing integration
-- **Testimonials** - Social proof section
-- **FAQ Section** - Common questions
-- **Footer** - Links and information
-
-### Dashboard
-- **Sidebar Navigation** - Collapsible sidebar with user menu
-- **Interactive Charts** - Data visualization with Recharts
-- **Data Tables** - Sortable and filterable tables
-- **Payment Gating** - Subscription-based access control
-
-### Animations & Effects
-- **Splash Cursor** - Interactive cursor effects
-- **Animated Lists** - Smooth list animations
-- **Progressive Blur** - Modern blur effects
-- **Infinite Slider** - Continuous scrolling elements
-
-## Theme Customization
-
-The starter kit includes a fully customizable theme system. You can customize colors, typography, and components using:
-
-- **Theme Tools**: [tweakcn.com](https://tweakcn.com/editor/theme?tab=typography), [themux.vercel.app](https://themux.vercel.app/shadcn-themes), or [ui.jln.dev](https://ui.jln.dev/)
-- **Global CSS**: Modify `app/globals.css` for custom styling
-- **Component Themes**: Update individual component styles in `components/ui/`
-
-## Environment Variables
-
-### Required for .env.local
-
-- `CONVEX_DEPLOYMENT` - Your Convex deployment URL
-- `NEXT_PUBLIC_CONVEX_URL` - Your Convex client URL
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
-- `CLERK_SECRET_KEY` - Clerk secret key
-- `NEXT_PUBLIC_CLERK_FRONTEND_API_URL` - Clerk frontend API URL (from JWT template)
-- `NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL` - Redirect after sign in
-- `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL` - Redirect after sign up
-- `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` - Fallback redirect for sign in
-- `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` - Fallback redirect for sign up
-
-### Required for Convex Dashboard
-
-- `CLERK_WEBHOOK_SECRET` - Clerk webhook secret (set in Convex dashboard)
-- `NEXT_PUBLIC_CLERK_FRONTEND_API_URL` - Clerk frontend API URL (set in Convex dashboard)
-
-## Deployment
-
-### Vercel Deployment (Recommended)
-
-1. Connect your repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
-
-The project is optimized for Vercel with:
-- Automatic builds with Turbopack
-- Environment variable management
-- Edge function support
-
-### Manual Deployment
-
-Build for production:
-
-```bash
-npm run build
-npm start
-```
-
-## Customization
-
-### Styling
-- Modify `app/globals.css` for global styles
-- Update TailwindCSS configuration
-- Customize component themes in `components/ui/`
-
-### Branding
-- Update logo in `components/logo.tsx`
-- Modify metadata in `app/layout.tsx`
-- Customize color scheme in CSS variables
-
-### Features
-- Add new dashboard pages in `app/dashboard/`
-- Extend database schema in `convex/schema.ts`
-- Create custom components in `components/`
-
-## Scripts
-
-- `npm run dev` - Start development server with Turbopack
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
-
-## Why Starter.diy?
-
-**THE EASIEST TO SET UP. EASIEST IN TERMS OF CODE.**
-
-- ✅ **Clerk + Convex + Clerk Billing** make it incredibly simple
-- ✅ **No complex payment integrations** - Clerk handles everything
-- ✅ **Real-time user sync** - Webhooks work out of the box
-- ✅ **Beautiful UI** - Tailark.com inspired landing page blocks
-- ✅ **Production ready** - Authentication, payments, and database included
-- ✅ **Type safe** - Full TypeScript support throughout
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License.
+- Submission → decision time: Days → Hours
+- Complete submissions: 60% → 90%
+- Review cycles: 3-4 → 1-2
 
 ---
 
-**Stop rebuilding the same foundation over and over.** Starter.diy eliminates weeks of integration work by providing a complete, production-ready SaaS template with authentication, payments, and real-time data working seamlessly out of the box.
+## Core Principle: Replace the Workflow, Not the Tools
 
-Built with ❤️ using Next.js 15, Convex, Clerk, and modern web technologies.
+**What we're replacing:**
+
+- Email/text for review communication → In-app field-level feedback
+- Google Docs for static guidance → Dynamic checklists by event type
+- Mental tracking of status → Explicit state machine with notifications
+
+**What stays (for now):**
+
+- Lu.ma for public calendar (we store the URL)
+- Fillout can continue (we'll import later)
+- Existing venue/vendor relationships
+
+---
+
+## Users & Permissions
+
+| Role      | Can Do                                                             | Cannot Do                                                   |
+| --------- | ------------------------------------------------------------------ | ----------------------------------------------------------- |
+| **Host**  | Create/edit own drafts, submit, respond to feedback, add Lu.ma URL | Edit after submit (until changes requested), approve events |
+| **Admin** | Review all events, request changes, approve, mark published        | Edit host's content directly                                |
+
+---
+
+## State Machine
+
+```
+┌──────┐      submit       ┌───────────┐     request      ┌─────────────────┐
+│ DRAFT├──────────────────>│ SUBMITTED ├────changes──────>│ CHANGES_REQUESTED│
+└──────┘                   └─────┬─────┘                  └────────┬────────┘
+                                 │                                  │resubmit
+                                 │approve                           ▼
+                           ┌─────▼─────┐                    ┌──────────────┐
+                           │ APPROVED  │<───────────────────│ RESUBMITTED  │
+                           └─────┬─────┘      approve       └──────────────┘
+                                 │add Lu.ma URL
+                           ┌─────▼──────┐
+                           │ PUBLISHED  │
+                           └────────────┘
+```
+
+**Transition Rules:**
+
+- Only hosts can: submit, resubmit, add Lu.ma URL
+- Only admins can: request changes, approve, mark published
+- Submitted events are locked from host edits until changes requested
+
+---
+
+## Database Schema (Convex)
+
+```typescript
+// User profile extends Clerk auth
+export const userProfiles = defineTable({
+  clerkUserId: v.string(),
+  role: v.union(v.literal("host"), v.literal("admin")),
+  orgName: v.optional(v.string()),
+  website: v.optional(v.string()),
+  socials: v.optional(v.object({
+    linkedin: v.optional(v.string()),
+    x: v.optional(v.string()),
+    instagram: v.optional(v.string()),
+  })),
+});
+
+// Events with field mapping from Fillout
+export const events = defineTable({
+  // Ownership
+  hostId: v.id("userProfiles"),
+
+  // Status machine
+  status: v.union(
+    v.literal("draft"),
+    v.literal("submitted"),
+    v.literal("changes_requested"),
+    v.literal("resubmitted"),
+    v.literal("approved"),
+    v.literal("published")
+  ),
+
+  // Fillout field mappings
+  title: v.string(),                    // "What is your event title?"
+  shortDescription: v.string(),         // "Please provide a short description"
+  eventDate: v.string(),                 // "What day and time are you planning?"
+  venue: v.string(),                     // "What venue are you planning?"
+  capacity: v.number(),                  // "What is your target event capacity?"
+  formats: v.array(v.string()),         // "What is the format?" (max 3)
+  isPublic: v.boolean(),                // "Public or private event?"
+  hasHostedBefore: v.boolean(),         // "Have you hosted similar events?"
+  targetAudience: v.string(),           // "Who is your targeted audience?"
+  planningDocUrl: v.optional(v.string()), // "Link to Planning Docs"
+
+  // Post-approval fields
+  lumaUrl: v.optional(v.string()),
+  onCalendar: v.boolean(),
+
+  // Agreement & metadata
+  agreementAcceptedAt: v.optional(v.number()),
+  submittedAt: v.optional(v.number()),
+  approvedAt: v.optional(v.number()),
+
+  // Checklist
+  checklistTemplate: v.string(), // 'panel' | 'mixer' | 'workshop' etc
+  checklist: v.array(v.object({
+    id: v.string(),
+    task: v.string(),
+    completed: v.boolean(),
+    dueDate: v.optional(v.string()),
+    section: v.string(), // 'planning' | 'marketing' | 'logistics'
+  })),
+});
+
+// Field-anchored feedback threads
+export const feedbackThreads = defineTable({
+  eventId: v.id("events"),
+  fieldPath: v.string(), // e.g., "shortDescription", "venue", "eventDate"
+  openedBy: v.id("userProfiles"),
+  status: v.union(v.literal("open"), v.literal("resolved")),
+  reason: v.optional(v.string()), // Quick reason: "needs_clarity", "date_conflict", etc
+});
+
+export const feedbackComments = defineTable({
+  threadId: v.id("feedbackThreads"),
+  authorId: v.id("userProfiles"),
+  message: v.string(),
+  createdAt: v.number(),
+});
+
+// Audit log for state changes
+export const auditLog = defineTable({
+  eventId: v.id("events"),
+  actorId: v.id("userProfiles"),
+  action: v.string(), // 'status_change', 'field_update', etc
+  fromValue: v.optional(v.any()),
+  toValue: v.optional(v.any()),
+  timestamp: v.number(),
+});
+
+// Indexes
+.index("by_host", ["hostId"])
+.index("by_status", ["status"])
+.index("by_date", ["eventDate"])
+.index("by_field_thread", ["eventId", "fieldPath"])
+```
+
+---
+
+## Field Mapping (Fillout → Database)
+
+| Fillout Form Field | Database Field        | Validation             | Helper Text                               |
+| ------------------ | --------------------- | ---------------------- | ----------------------------------------- |
+| Event title        | `title`               | Required, 100 char     | "Be compelling and clear"                 |
+| Short description  | `shortDescription`    | Required, 500 char     | "Include speakers, what makes it special" |
+| Day and time       | `eventDate`           | Required, date picker  | "Check calendar for conflicts"            |
+| Venue              | `venue`               | Required               | "Your office or see venue list"           |
+| Target capacity    | `capacity`            | Required, number       | "Set 20-30% above actual"                 |
+| Format (≤3)        | `formats[]`           | Required, multi-select | "Panel, Mixer, Workshop, etc"             |
+| Public/Private     | `isPublic`            | Required, boolean      | "Public = open registration"              |
+| Hosted before?     | `hasHostedBefore`     | Required, boolean      | "Helps us provide right guidance"         |
+| Target audience    | `targetAudience`      | Required               | "B2B founders, engineers, etc"            |
+| Planning doc       | `planningDocUrl`      | Optional, URL          | "Google Doc or similar"                   |
+| Host Agreement     | `agreementAcceptedAt` | Required checkbox      | "I accept the terms"                      |
+
+---
+
+## Collision Detection (MVP)
+
+```typescript
+// When host selects date/time, run:
+function detectCollisions(proposedDate: Date, audience: string) {
+  const twoHoursBefore = proposedDate - 2 * HOUR;
+  const twoHoursAfter = proposedDate + 2 * HOUR;
+
+  const overlapping = events
+    .where("eventDate", ">=", twoHoursBefore)
+    .where("eventDate", "<=", twoHoursAfter)
+    .where("status", "in", ["approved", "published"]);
+
+  // Flag if same audience or format
+  return overlapping.filter(
+    (event) =>
+      event.targetAudience.includes(audience) ||
+      event.formats.some((f) => proposedFormats.includes(f))
+  );
+}
+// Show as warning, not blocking: "⚠️ Potential conflict with [Event Name]"
+```
+
+---
+
+## Build Phases
+
+### Phase 0: Foundation
+
+**Goal:** Auth + role-based routing works
+
+- [ ] Next.js + Tailwind v4 + shadcn setup
+- [ ] Clerk auth with role detection
+- [ ] Convex schema + initial migrations
+- [ ] Layout shells (Host vs Admin nav)
+
+**Acceptance:** User can sign in, correct dashboard loads based on role
+
+### Phase 1: Host Submission
+
+**Goal:** Complete submission flow with field validation
+
+- [ ] Multi-step form wizard (matches Fillout fields exactly)
+- [ ] Autosave to draft on every change
+- [ ] Submit action (locks record, changes status)
+- [ ] "My Events" list with status badges
+
+**Acceptance:** Host can create, save, and submit event; form locks after submit
+
+### Phase 2: Admin Review + Feedback
+
+**Goal:** Field-level feedback loop works
+
+- [ ] Review queue with filters (status, date range)
+- [ ] Event detail view with sectioned layout
+- [ ] Field-anchored comment threads (drawer UI)
+- [ ] Request changes action (with quick reasons)
+- [ ] Approve action (status change + notification)
+
+**Acceptance:** Admin requests changes on venue field → Host sees feedback on that field → Host updates and resubmits → Admin approves
+
+### Phase 3: Publishing + Checklists
+
+**Goal:** Approved events get published with checklist completion
+
+- [ ] Lu.ma URL field (unlocked after approval)
+- [ ] Dynamic checklist by event type
+- [ ] Collision warnings on date selection
+- [ ] "Mark Published" admin action
+- [ ] Email notifications (Resend using Convex componnets https://www.convex.dev/components/resend has getting started guide)
+
+**Acceptance:** Approved event → Host adds Lu.ma URL → Admin marks published → Shows in public list
+
+### Phase 4: Polish + Import
+
+**Goal:** Production-ready with data migration
+
+- [ ] Bulk actions for admin
+- [ ] Activity timeline per event
+- [ ] Performance optimization
+
+---
+
+## Pages & Routes
+
+```
+/
+├── (host)
+│   ├── events
+│   │   ├── page.tsx          [My Events list]
+│   │   └── [id]
+│   │       ├── page.tsx      [Event wizard]
+│   │       └── checklist
+├── (admin)
+│   ├── review
+│   │   ├── page.tsx          [Review queue]
+│   │   └── [id]
+│   │       └── page.tsx      [Detail + feedback]
+│   └── calendar              [Read-only grid view]
+└── settings                  [Profile + socials]
+```
+
+---
+
+## Component Architecture
+
+```typescript
+// Field with feedback indicator
+<FormField name="venue">
+  <Input />
+  {hasThread && <CommentIndicator count={3} status="open" />}
+</FormField>
+
+// Feedback drawer (admin)
+<FeedbackDrawer
+  eventId={eventId}
+  fieldPath="venue"
+  onResolve={handleResolve}
+/>
+
+// Status badge with state machine awareness
+<StatusBadge
+  status={event.status}
+  allowedTransitions={['approve', 'request_changes']}
+/>
+```
+
+---
+
+## Acceptance Test Scenarios
+
+1. **Happy Path:** Draft → Submit → Approve → Publish
+2. **Feedback Loop:** Submit → Changes Requested (venue) → Edit → Resubmit → Approve
+3. **Collision Warning:** Two AI panels at 6pm → Warning shown → Host proceeds anyway
+4. **Permission Check:** Host A cannot see Host B's draft
+5. **State Lock:** Submitted event cannot be edited by host
+6. **Agreement Required:** Submit blocked without checkbox
+7. **Lu.ma Integration:** Approved → Add URL → Published
+
+---
+
+## Non-Goals (Explicitly Out of Scope)
+
+- Full Lu.ma API integration (just store URL)
+- Payment processing
+- Attendee registration
+- Post-event analytics
+- AI content generation
+- Mobile app
+- Venue booking system
+
+---
+
+## Open Questions (Won't Block MVP)
+
+1. Should "Published" be automatic when Lu.ma URL is added?
+
+- The Staff will manually mark as published for the MVP
+
+2. Do we need co-host invites in MVP?
+
+- Not in scope for the MVP
+
+3. Should collision warnings block submission?
+
+- Not in scope for the MVP
+
+---
+
+## Migration Strategy
+
+Since Fillout continues to run:
+
+1. Build and test with new submissions
+
+---
+
+## Why This Architecture Wins
+
+1. **Field-level feedback** eliminates "which part?" confusion
+2. **State machine** prevents illegal transitions and confusion
+3. **Exact Fillout parity** means zero learning curve for staff
+4. **Convex reactivity** means no refresh buttons, ever
+5. **Phased delivery** ships value in Day 5, not Day 30
+
+---
+
+## Instructions for AI Builder
+
+1. Start with Phase 0 - get auth working with role detection
+2. Build Phase 1 completely before moving on (no half-built features)
+3. Use the exact field names from the Field Mapping table
+4. Implement the state machine transitions as server-side guards
+5. For each phase, run the acceptance test before proceeding
+6. Keep components small - one file, one responsibility
+7. Use Convex subscriptions for all real-time updates
+
+The schema, field mappings, and state machine above are your single source of truth. When in doubt, match the Fillout form exactly.
