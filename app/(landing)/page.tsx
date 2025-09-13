@@ -17,7 +17,7 @@ export default function Home() {
               <h1 className="text-center text-4xl font-semibold lg:text-5xl">Pricing that Scales with You</h1>
               <p>Gemini is evolving to be more than just the models. It supports an entire to the APIs and platforms helping developers and businesses innovate.</p>
           </div>
-          <CustomClerkPricing />
+          {/* <CustomClerkPricing /> */}
         </div>
       </section>
       <Testimonials />

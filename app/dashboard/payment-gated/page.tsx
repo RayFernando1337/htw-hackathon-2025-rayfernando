@@ -9,7 +9,7 @@ function UpgradeCard() {
         <p>This page is available on paid plans. Choose a plan that fits your needs.</p>
       </div>
       <div className="px-8 lg:px-12">
-        <CustomClerkPricing />
+        {/* <CustomClerkPricing /> */}
       </div>
     </>
   )
