@@ -92,7 +92,44 @@ Clerk webhooks must be configured to:
 ## Shadcn Component Installation Rules
 When installing shadcn/ui components:
 - ALWAYS use `bunx --bun shadcn@latest add [component-name]` instead of `npx`
-- If dependency installation fails, manually install with `bun install [dependency-name]`
+- If dependency installation fails, manually install with `bun add [dependency-name]`
 - Check components.json for existing configuration before installing
 - Verify package.json after installation to ensure dependencies were added
 - Multiple components can be installed at once: `bunx --bun shadcn@latest add button card drawer`
+- Component path is configured as `@/components/ui`
+
+## Convex Function Patterns
+When writing Convex functions:
+- Use Zod validators: `import { z } from "zod"`
+- Import from `convex-helpers/server/zod` for Convex-specific validators
+- Pattern for queries: `export const getFoo = query({ args: { id: v.id("foos") }, handler: async (ctx, args) => {...} })`
+- Pattern for mutations: `export const createFoo = mutation({ args: { ...zodSchema }, handler: async (ctx, args) => {...} })`
+- Always check authentication: `const identity = await ctx.auth.getUserIdentity()`
+- Use `ctx.db` for database operations
+
+## Event Platform Domain Model (Planned)
+The application will manage events with the following workflow:
+1. **Draft** → Host creates/edits event
+2. **Submitted** → Admin reviews with field-level feedback
+3. **Approved** → Admin approves for publishing
+4. **Published** → Synced to Lu.ma, visible publicly
+
+Key entities to implement:
+- `events`: Core event data with state machine
+- `feedbackThreads`: Field-level comments for review
+- `auditLog`: Track all changes for compliance
+- `eventChecklists`: Dynamic requirements by event type
+
+## Feature Development Workflow
+1. Feature specs start in `documentation/features/planned/`
+2. Move to `active/` when development begins
+3. Archive to `completed/[feature-name]/` when done
+4. Follow naming convention: `[feature-name]-[status].md`
+5. Consult `/documentation/features/planned/htw-event-platform-mvp-plan.md` for roadmap
+
+## Important Development Notes
+- The project uses Bun as package manager - use `bun` commands, not `npm` for installing packages
+- Convex functions require both servers running: `bun run dev` AND `bunx convex dev`
+- All UI updates are real-time via Convex - no manual refresh needed
+- Follow existing patterns in `.cursor/rules/` for consistency
+- Check `documentation/AGENTS.md` for AI agent collaboration guidelines
