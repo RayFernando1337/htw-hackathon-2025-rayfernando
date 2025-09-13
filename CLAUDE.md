@@ -133,3 +133,9 @@ Key entities to implement:
 - All UI updates are real-time via Convex - no manual refresh needed
 - Follow existing patterns in `.cursor/rules/` for consistency
 - Check `documentation/AGENTS.md` for AI agent collaboration guidelines
+
+## Directory-Specific Guidelines
+When working in specific directories, consult the local CLAUDE.md files:
+- `/convex/CLAUDE.md` - Convex backend functions, validators, and database patterns
+- `/app/CLAUDE.md` - Next.js app router, React hooks, and frontend patterns
+- `/components/CLAUDE.md` - Component structure, shadcn/ui usage, and styling guidelines
