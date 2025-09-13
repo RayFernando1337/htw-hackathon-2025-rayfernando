@@ -1,31 +1,22 @@
-"use client"
+"use client";
 
-import * as React from "react"
 import {
-  IconCamera,
-  IconChartBar,
+  IconCalendar,
+  IconClipboardCheck,
   IconDashboard,
-  IconDatabase,
-  IconMessageCircle,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
   IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
+  IconPlus,
   IconReport,
-  IconSearch,
   IconSettings,
-  IconUsers,
-  IconSparkles,
-  IconBrandOpenai,
-} from "@tabler/icons-react"
+  IconUser,
+} from "@tabler/icons-react";
+import * as React from "react";
 
-import { NavDocuments } from "@/app/dashboard/nav-documents"
-import { NavMain } from "@/app/dashboard/nav-main"
-import { NavSecondary } from "@/app/dashboard/nav-secondary"
-import { NavUser } from "@/app/dashboard/nav-user"
+import { NavMain } from "@/app/dashboard/nav-main";
+import { NavSecondary } from "@/app/dashboard/nav-secondary";
+import { NavUser } from "@/app/dashboard/nav-user";
+import { ChatMaxingIconColoured } from "@/components/logo";
+import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
   SidebarContent,
@@ -34,87 +25,74 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { ChatMaxingIconColoured } from "@/components/logo"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
+} from "@/components/ui/sidebar";
+import Link from "next/link";
 
-const data = {
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: IconDashboard,
-    },
-    {
-      title: "Payment gated",
-      url: "/dashboard/payment-gated",
-      icon: IconSparkles,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
-    },
-  ],
+// Host navigation items
+const hostNavItems = [
+  { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
+  { title: "My Events", url: "/dashboard/events", icon: IconCalendar },
+  { title: "Create Event", url: "/dashboard/events/new", icon: IconPlus },
+];
+
+// Admin navigation items
+const adminNavItems = [
+  { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
+  { title: "Review Queue", url: "/dashboard/review", icon: IconClipboardCheck },
+  { title: "All Events", url: "/dashboard/admin/events", icon: IconCalendar },
+  { title: "Calendar View", url: "/dashboard/calendar", icon: IconCalendar },
+  { title: "Reports", url: "/dashboard/reports", icon: IconReport },
+];
+
+const navSecondary = [
+  {
+    title: "Profile",
+    url: "/dashboard/profile",
+    icon: IconUser,
+  },
+  {
+    title: "Settings",
+    url: "/dashboard/settings",
+    icon: IconSettings,
+  },
+  {
+    title: "Get Help",
+    url: "#",
+    icon: IconHelp,
+  },
+];
+
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  userRole?: "host" | "admin";
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ userRole, ...props }: AppSidebarProps) {
+  const navItems = userRole === "admin" ? adminNavItems : hostNavItems;
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
+            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <Link href="/">
                 <ChatMaxingIconColoured className="!size-6" />
-                <span className="text-base font-semibold">Starter DIY</span>
-                <Badge variant="outline" className="text-muted-foreground  text-xs">Demo</Badge>
+                <span className="text-base font-semibold">HTW Events</span>
+                <Badge variant="outline" className="text-muted-foreground text-xs">
+                  {userRole === "admin" ? "Admin" : "Host"}
+                </Badge>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navItems} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
