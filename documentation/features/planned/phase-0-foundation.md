@@ -3,9 +3,11 @@
 **Timeline: 2-3 days** | **Complexity: Medium** | **Priority: Critical**
 
 ## Overview
+
 Establish the foundational infrastructure for role-based access control, user profiles, and routing. This phase sets up the core authentication and authorization system that all other features depend on.
 
 ## Success Criteria
+
 - [ ] User can sign up with Clerk authentication
 - [ ] Role assignment works correctly (host vs admin)
 - [ ] Onboarding flow captures required information
@@ -27,13 +29,16 @@ export default defineSchema({
     role: v.union(v.literal("host"), v.literal("admin")),
     orgName: v.optional(v.string()),
     website: v.optional(v.string()),
-    socials: v.optional(v.object({
-      linkedin: v.optional(v.string()),
-      x: v.optional(v.string()),
-      instagram: v.optional(v.string()),
-    })),
+    socials: v.optional(
+      v.object({
+        linkedin: v.optional(v.string()),
+        x: v.optional(v.string()),
+        instagram: v.optional(v.string()),
+      })
+    ),
     onboardingCompleted: v.boolean(),
-  }).index("byExternalId", ["externalId"])
+  })
+    .index("byExternalId", ["externalId"])
     .index("byRole", ["role"]),
 
   // Add userProfiles for extended profile data
@@ -41,10 +46,12 @@ export default defineSchema({
     userId: v.id("users"),
     bio: v.optional(v.string()),
     profileImageUrl: v.optional(v.string()),
-    preferences: v.optional(v.object({
-      emailNotifications: v.boolean(),
-      smsNotifications: v.boolean(),
-    })),
+    preferences: v.optional(
+      v.object({
+        emailNotifications: v.boolean(),
+        smsNotifications: v.boolean(),
+      })
+    ),
   }).index("byUserId", ["userId"]),
 
   // Keep existing paymentAttempts
@@ -73,9 +80,9 @@ const handleUserCreated = async (ctx: ActionCtx, data: any) => {
 
 // convex/users.ts - Add role detection function
 export const determineUserRole = (emailAddresses: any[]): "host" | "admin" => {
-  const primaryEmail = emailAddresses.find(e => e.primary)?.email_address;
+  const primaryEmail = emailAddresses.find((e) => e.primary)?.email_address;
   // Admin emails from environment or hardcoded list
-  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+  const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
   return adminEmails.includes(primaryEmail) ? "admin" : "host";
 };
 ```
@@ -91,7 +98,7 @@ import { redirect } from "next/navigation";
 
 export default function DashboardLayout({ children }) {
   const { userId } = useAuth();
-  const currentUser = useQuery(api.users.getCurrentUser);
+  const currentUser = useQuery(api.users.current);
 
   // Redirect based on role
   useEffect(() => {
@@ -182,6 +189,7 @@ export default function OnboardingPage() {
 ## Verification Steps
 
 ### 1. Database Migration
+
 ```bash
 bunx convex dev
 # Verify schema updates in Convex dashboard
@@ -189,6 +197,7 @@ bunx convex dev
 ```
 
 ### 2. User Creation Test
+
 ```bash
 # Sign up with test accounts
 # Host account: test-host@example.com
@@ -197,28 +206,33 @@ bunx convex dev
 ```
 
 ### 3. Navigation Test
+
 - Login as host → see host navigation items
 - Login as admin → see admin navigation items
 - Verify menu items link to correct pages
 
 ### 4. Onboarding Flow
+
 - New user signup → redirected to /onboarding
 - Complete onboarding form
 - Submit → redirected to /dashboard
 - Logout/login → goes directly to dashboard
 
 ### 5. Role Persistence
+
 - Create user with specific role
 - Logout and login again
 - Verify role and navigation remain correct
 
 ## Dependencies
+
 - Clerk authentication (already installed)
 - Convex backend (already installed)
 - shadcn/ui components (already installed)
 - React Hook Form + Zod for validation
 
 ## Risk Mitigation
+
 - **Risk**: Incorrect role assignment
   - **Mitigation**: Admin email list in environment variables
   - **Fallback**: Manual role update via Convex dashboard
@@ -228,7 +242,9 @@ bunx convex dev
   - **Fallback**: Mark onboardingCompleted via Convex function
 
 ## Next Phase Dependencies
+
 Phase 1 (Host Submission) requires:
+
 - ✅ User authentication working
 - ✅ Role-based routing established
 - ✅ User profiles created
