@@ -1,5 +1,6 @@
 "use client";
 
+import { PageContainer, PageHeader } from "@/components/ui/page-container";
 import { useQuery } from "convex/react";
 import { format } from "date-fns";
 import { Calendar, MapPin, Plus, Users } from "lucide-react";
@@ -170,21 +171,19 @@ export default function MyEventsPage() {
   }
 
   return (
-    <div className="space-y-6 px-4 sm:px-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">My Events</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your HTW event submissions and track their progress
-          </p>
-        </div>
-        <Button asChild className="w-full sm:w-auto">
-          <Link href="/dashboard/events/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Event
-          </Link>
-        </Button>
-      </div>
+    <PageContainer className="space-y-6" maxWidth="full">
+      <PageHeader
+        title="My Events"
+        subtitle="Manage your HTW event submissions and track their progress"
+        right={
+          <Button asChild className="w-full sm:w-auto">
+            <Link href="/dashboard/events/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Event
+            </Link>
+          </Button>
+        }
+      />
 
       {/* Stats Overview */}
       {stats && stats.totalEvents > 0 && (
@@ -232,6 +231,6 @@ export default function MyEventsPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

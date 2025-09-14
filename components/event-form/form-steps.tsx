@@ -70,16 +70,18 @@ export function BasicsStep({ form, onNext, isLoading }: StepProps) {
           )}
         />
 
-        <div className="flex justify-end">
-          <Button
-            type="button"
-            onClick={handleNext}
-            disabled={isLoading}
-            className="w-full sm:w-auto"
-          >
-            Next: Logistics
-          </Button>
-        </div>
+        {onNext && (
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              onClick={handleNext}
+              disabled={isLoading}
+              className="w-full sm:w-auto"
+            >
+              Next: Logistics
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -154,25 +156,31 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onPrev}
-            disabled={isLoading}
-            className="w-full sm:w-auto"
-          >
-            Back
-          </Button>
-          <Button
-            type="button"
-            onClick={handleNext}
-            disabled={isLoading}
-            className="w-full sm:w-auto"
-          >
-            Next
-          </Button>
-        </div>
+        {(onPrev || onNext) && (
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between">
+            {onPrev && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onPrev}
+                disabled={isLoading}
+                className="w-full sm:w-auto"
+              >
+                Back
+              </Button>
+            )}
+            {onNext && (
+              <Button
+                type="button"
+                onClick={handleNext}
+                disabled={isLoading}
+                className="w-full sm:w-auto"
+              >
+                Next
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -302,25 +310,31 @@ export function AudienceStep({ form, onNext, onPrev, isLoading }: StepProps) {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onPrev}
-            disabled={isLoading}
-            className="w-full sm:w-auto"
-          >
-            Back
-          </Button>
-          <Button
-            type="button"
-            onClick={handleNext}
-            disabled={isLoading}
-            className="w-full sm:w-auto"
-          >
-            Next
-          </Button>
-        </div>
+        {(onPrev || onNext) && (
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between">
+            {onPrev && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onPrev}
+                disabled={isLoading}
+                className="w-full sm:w-auto"
+              >
+                Back
+              </Button>
+            )}
+            {onNext && (
+              <Button
+                type="button"
+                onClick={handleNext}
+                disabled={isLoading}
+                className="w-full sm:w-auto"
+              >
+                Next
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
