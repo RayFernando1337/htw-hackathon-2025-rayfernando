@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
+import { useFormDraft } from "@/hooks/useFormDraft";
 
 import { AutoSaveIndicator, StepIndicator } from "@/components/event-form/field-with-help";
 import {
@@ -62,6 +63,9 @@ export default function CreateEventPage() {
       agreementAccepted: false,
     },
   });
+
+  // Generic draft autosave (in addition to server-side draft writes)
+  const { clear: clearLocalDraft } = useFormDraft({ key: "event-create", data: form.watch(), enabled: true });
 
   // Auto-save functionality
   const debouncedSave = useDebouncedCallback(async (data: Partial<EventEditFormData>) => {
@@ -148,6 +152,9 @@ export default function CreateEventPage() {
 
       // Submit the event
       await submitEvent({ id: draftId });
+
+      // Clear local autosave draft
+      await clearLocalDraft();
 
       toast.success("Event submitted for review!");
       router.push("/dashboard/events");

@@ -11,12 +11,27 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MessageSquare, ArrowRight } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/ui/page-container";
+import { useEffect } from "react";
+import { useFormDraft } from "@/hooks/useFormDraft";
 
 export default function ReviewQueuePage() {
   const [statusFilter, setStatusFilter] = useState<"all" | "submitted" | "resubmitted">("submitted");
   const events = useQuery(api.events.getReviewQueue, {
     status: statusFilter === "all" ? ["all"] : [statusFilter],
   });
+
+  // Persist filter choice
+  const { restore } = useFormDraft<{ statusFilter: "all" | "submitted" | "resubmitted" }>({
+    key: "admin-review:filters",
+    data: { statusFilter },
+    enabled: true,
+  });
+  useEffect(() => {
+    if (restore?.statusFilter && restore.statusFilter !== statusFilter) {
+      setStatusFilter(restore.statusFilter);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restore?.statusFilter]);
 
   return (
     <PageContainer className="space-y-6" maxWidth="xl">
