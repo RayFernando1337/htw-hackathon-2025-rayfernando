@@ -3,27 +3,27 @@ import Link from 'next/link'
 
 const links = [
     {
-        title: 'Features',
-        href: '#',
+        title: 'Submit Event',
+        href: '/dashboard',
     },
     {
-        title: 'Solution',
-        href: '#',
+        title: 'How It Works',
+        href: '#features',
     },
     {
-        title: 'Customers',
-        href: '#',
+        title: 'Event Types',
+        href: '#event-types',
     },
     {
-        title: 'Pricing',
-        href: '#',
+        title: 'Process',
+        href: '#process',
     },
     {
-        title: 'Help',
-        href: '#',
+        title: 'FAQs',
+        href: '#faqs',
     },
     {
-        title: 'About',
+        title: 'Support',
         href: '#',
     },
 ]
@@ -37,7 +37,7 @@ export default function FooterSection() {
                     aria-label="go home"
                     className="flex mx-auto gap-2 items-center size-fit">
                     <ChatMaxingIconColoured />
-                    <span className="text-xl font-medium">Starter.diy</span>
+                    <span className="text-xl font-medium">HTW Events</span>
                 </Link>
 
                 <div className="my-8 flex flex-wrap justify-center gap-6 text-sm">
@@ -159,7 +159,7 @@ export default function FooterSection() {
                         </svg>
                     </Link>
                 </div>
-                <span className="text-muted-foreground block text-center text-sm"> © {new Date().getFullYear()} Starter.diy, All rights reserved</span>
+                <span className="text-muted-foreground block text-center text-sm"> © {new Date().getFullYear()} HTW Events Platform, All rights reserved</span>
             </div>
         </footer>
     )

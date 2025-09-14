@@ -1,6 +1,6 @@
 export default function FAQs() {
     return (
-        <section className="scroll-py-16 py-16 md:scroll-py-32 md:py-32">
+        <section id="faqs" className="scroll-py-16 py-16 md:scroll-py-32 md:py-32">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="grid gap-y-12 px-2 lg:[grid-template-columns:1fr_auto]">
                     <div className="text-center lg:text-left">
@@ -8,35 +8,35 @@ export default function FAQs() {
                             Frequently <br className="hidden lg:block" /> Asked <br className="hidden lg:block" />
                             Questions
                         </h2>
-                        <p>Accusantium quisquam. Illo, omnis?</p>
+                        <p>Everything you need to know about hosting events with HTW</p>
                     </div>
 
                     <div className="divide-y divide-dashed sm:mx-auto sm:max-w-lg lg:mx-0">
                         <div className="pb-6">
-                            <h3 className="font-medium">What is the refund policy?</h3>
-                            <p className="text-muted-foreground mt-4">We offer a 30-day money back guarantee. If you are not satisfied with our product, you can request a refund within 30 days of your purchase.</p>
+                            <h3 className="font-medium">How long does event approval take?</h3>
+                            <p className="text-muted-foreground mt-4">With our streamlined review process, most events receive initial feedback within 24 hours. The full approval process typically takes 1-2 review cycles, compared to the previous 3-4 cycles.</p>
 
                             <ol className="list-outside list-decimal space-y-2 pl-4">
-                                <li className="text-muted-foreground mt-4">To request a refund, please contact our support team with your order number and reason for the refund.</li>
-                                <li className="text-muted-foreground mt-4">Refunds will be processed within 3-5 business days.</li>
-                                <li className="text-muted-foreground mt-4">Please note that refunds are only available for new customers and are limited to one per customer.</li>
+                                <li className="text-muted-foreground mt-4">Submit your complete event proposal through our multi-step form</li>
+                                <li className="text-muted-foreground mt-4">Receive field-specific feedback from admin reviewers</li>
+                                <li className="text-muted-foreground mt-4">Make requested changes and resubmit for final approval</li>
                             </ol>
                         </div>
                         <div className="py-6">
-                            <h3 className="font-medium">How do I cancel my subscription?</h3>
-                            <p className="text-muted-foreground mt-4">You can cancel your subscription at any time by logging into your account and clicking on the cancel button.</p>
+                            <h3 className="font-medium">What types of events can I submit?</h3>
+                            <p className="text-muted-foreground mt-4">We support various event formats including panels, mixers, workshops, hackathons, and more. Each event type comes with its own dynamic checklist to ensure you don't miss critical planning steps.</p>
                         </div>
                         <div className="py-6">
-                            <h3 className="font-medium">Can I upgrade my plan?</h3>
-                            <p className="text-muted-foreground my-4">Yes, you can upgrade your plan at any time by logging into your account and selecting the plan you want to upgrade to.</p>
+                            <h3 className="font-medium">How does field-level feedback work?</h3>
+                            <p className="text-muted-foreground my-4">Instead of confusing email threads, reviewers can leave specific feedback on individual form fields. You'll see exactly what needs to be changed, making the revision process clear and efficient.</p>
                             <ul className="list-outside list-disc space-y-2 pl-4">
-                                <li className="text-muted-foreground">You will be charged the difference in price between your current plan and the plan you are upgrading to.</li>
-                                <li className="text-muted-foreground">Your new plan will take effect immediately and you will be billed at the new rate on your next billing cycle.</li>
+                                <li className="text-muted-foreground">Feedback appears directly on the field that needs attention</li>
+                                <li className="text-muted-foreground">Each feedback thread can be resolved independently</li>
                             </ul>
                         </div>
                         <div className="py-6">
-                            <h3 className="font-medium">Do you offer phone support?</h3>
-                            <p className="text-muted-foreground mt-4">We do not offer phone support at this time. However, you can contact us via email or live chat for any questions or concerns you may have.</p>
+                            <h3 className="font-medium">Can I save my progress and return later?</h3>
+                            <p className="text-muted-foreground mt-4">Yes! Our auto-save feature ensures you never lose your work. Events remain in draft status until you're ready to submit, and you can return to edit them at any time before submission.</p>
                         </div>
                     </div>
                 </div>

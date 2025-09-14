@@ -16,10 +16,10 @@ import { useTheme } from "next-themes"
 
 
 const menuItems = [
-    { name: 'Features', href: '#link' },
-    { name: 'Solution', href: '#link' },
-    { name: 'Pricing', href: '#link' },
-    { name: 'About', href: '#link' },
+    { name: 'How It Works', href: '#features' },
+    { name: 'Event Types', href: '#event-types' },
+    { name: 'Process', href: '#process' },
+    { name: 'FAQs', href: '#faqs' },
 ]
 
 export const HeroHeader = () => {
@@ -51,7 +51,7 @@ export const HeroHeader = () => {
                                 aria-label="home"
                                 className="flex items-center space-x-2">
                                 <ChatMaxingIconColoured />
-                                <span className="text-xl font-medium">Starter.diy</span>
+                                <span className="text-xl font-medium">HTW Events</span>
                                 <Badge variant="outline" className="text-muted-foreground  text-xs">Demo</Badge>
                             </Link>
 
