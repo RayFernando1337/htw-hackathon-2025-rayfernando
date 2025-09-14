@@ -21,6 +21,7 @@ import { Form } from "@/components/ui/form";
 import { PageContainer, PageHeader } from "@/components/ui/page-container";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { Button } from "@/components/ui/button";
 import {
   EventEditFormData,
   eventDraftSchema,
@@ -164,6 +165,32 @@ export default function CreateEventPage() {
     }
   };
 
+  // Explicit save-as-draft (no validation)
+  const saveDraftNow = async () => {
+    try {
+      const values = form.getValues();
+      let id = draftId as Id<"events"> | null;
+      if (!id) {
+        id = await createDraft({
+          title: values.title || "",
+          shortDescription: values.shortDescription || "",
+        });
+        setDraftId(id);
+      }
+      const { agreementAccepted, ...rest } = values;
+      await updateDraft({
+        id: id!,
+        ...rest,
+        agreementAcceptedAt: values.agreementAccepted ? Date.now() : undefined,
+      });
+      await clearLocalDraft();
+      toast.success("Draft saved");
+      router.push(`/dashboard/events/${id}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to save draft");
+    }
+  };
+
   const nextStep = () => {
     if (currentStep < FORM_STEPS.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -186,7 +213,14 @@ export default function CreateEventPage() {
               Step {currentStep + 1} of {FORM_STEPS.length}: {FORM_STEPS[currentStep].title}
             </span>
           }
-          right={<AutoSaveIndicator status={autoSaveStatus} />}
+          right={
+            <div className="flex items-center gap-2">
+              <AutoSaveIndicator status={autoSaveStatus} />
+              <Button variant="outline" size="sm" onClick={saveDraftNow}>
+                Save Draft
+              </Button>
+            </div>
+          }
         />
 
         {/* Step Progress */}
