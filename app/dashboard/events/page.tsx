@@ -1,54 +1,64 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
 import { useQuery } from "convex/react";
 import { format } from "date-fns";
-import { Plus, Calendar, MapPin, Users } from "lucide-react";
+import { Calendar, MapPin, Plus, Users } from "lucide-react";
+import Link from "next/link";
 
-import { api } from "@/convex/_generated/api";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { api } from "@/convex/_generated/api";
+import { FunctionReturnType } from "convex/server";
 
 const statusConfig = {
   draft: {
     label: "Draft",
     color: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-    description: "Continue editing your event"
+    description: "Continue editing your event",
   },
   submitted: {
     label: "Under Review",
     color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-    description: "Being reviewed by HTW team"
+    description: "Being reviewed by HTW team",
   },
   changes_requested: {
     label: "Changes Requested",
     color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-    description: "Updates needed before approval"
+    description: "Updates needed before approval",
   },
   resubmitted: {
     label: "Resubmitted",
     color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-    description: "Updated version under review"
+    description: "Updated version under review",
   },
   approved: {
     label: "Approved",
     color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-    description: "Ready for publishing"
+    description: "Ready for publishing",
   },
   published: {
     label: "Published",
     color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
-    description: "Live and accepting registrations"
+    description: "Live and accepting registrations",
   },
 } as const;
 
-function EventCard({ event }: { event: any }) {
+// Type for individual event from the getMyEvents query
+type Event = FunctionReturnType<typeof api.events.getMyEvents>[0];
+
+function EventCard({ event }: { event: Event }) {
   const config = statusConfig[event.status];
   const canEdit = event.status === "draft" || event.status === "changes_requested";
-  
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader>
@@ -72,17 +82,15 @@ function EventCard({ event }: { event: any }) {
               </div>
             </CardDescription>
           </div>
-          <Badge className={config.color}>
-            {config.label}
-          </Badge>
+          <Badge className={config.color}>{config.label}</Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         <p className="text-sm text-muted-foreground line-clamp-3">
           {event.shortDescription || "No description yet"}
         </p>
-        
+
         {event.formats && event.formats.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-3">
             {event.formats.map((format: string) => (
@@ -93,12 +101,10 @@ function EventCard({ event }: { event: any }) {
           </div>
         )}
       </CardContent>
-      
+
       <CardFooter className="flex justify-between items-center">
-        <div className="text-xs text-muted-foreground">
-          {config.description}
-        </div>
-        
+        <div className="text-xs text-muted-foreground">{config.description}</div>
+
         <Button variant="outline" asChild>
           <Link href={`/dashboard/events/${event._id}`}>
             {canEdit ? "Continue Editing" : "View Details"}
@@ -219,7 +225,7 @@ export default function MyEventsPage() {
         <EmptyState />
       ) : (
         <div className="grid gap-4">
-          {events.map(event => (
+          {events.map((event) => (
             <EventCard key={event._id} event={event} />
           ))}
         </div>
