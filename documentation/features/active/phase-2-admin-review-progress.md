@@ -10,7 +10,7 @@ Core workflow is implemented end-to-end: review queue, event review with field-l
 - Phase 2 (Admin Review): ✅ 100% — functional complete; polish pending
 
 ## Current Tasks
-- [ ] Add notifications dropdown UI for hosts (badge + list) on dashboard header
+- [x] Add notifications dropdown UI for hosts (badge + list) on dashboard header — implemented in [`app/dashboard/site-header.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/app/dashboard/site-header.tsx)
 - [ ] Optional: allow admins to mark feedback threads as resolved from the UI
 - [ ] Optional: inline field context preview in Feedback Drawer
 

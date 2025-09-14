@@ -30,6 +30,23 @@ export const markRead = mutation({
   },
 });
 
+export const markAllRead = mutation({
+  args: {},
+  returns: v.number(),
+  handler: async (ctx) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const list = await ctx.db
+      .query("notifications")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    const unread = list.filter((n) => !n.readAt);
+    for (const n of unread) {
+      await ctx.db.patch(n._id, { readAt: Date.now() });
+    }
+    return unread.length;
+  },
+});
+
 export const getForCurrentUser = query({
   args: {},
   handler: async (ctx) => {

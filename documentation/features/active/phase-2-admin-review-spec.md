@@ -18,8 +18,9 @@ Build an admin review workflow that lets admins review host-submitted events, le
 - Host UI:
   - Edit page surfaces feedback threads, allows replies, and autosaves drafts.  
     Code: [`app/dashboard/events/[id]/page.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/app/dashboard/events/%5Bid%5D/page.tsx)
-- Notifications: In-app notifications for feedback and status changes.  
-  Code: [`convex/notifications.ts`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/convex/notifications.ts)
+- Notifications: In-app notifications for feedback and status changes, surfaced via a host-only dropdown in the dashboard header with unread badge and list.  
+  UI: [`app/dashboard/site-header.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/app/dashboard/site-header.tsx)  
+  Data: [`convex/notifications.ts`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/convex/notifications.ts)
 - Autosave:
   - Generic drafts via `formDrafts` and `useFormDraft` for all long-lived forms.  
     Code: [`hooks/useFormDraft.ts`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/hooks/useFormDraft.ts)
@@ -53,6 +54,7 @@ Build an admin review workflow that lets admins review host-submitted events, le
 - Request changes transitions event to `changes_requested`; host notification is created.
 - Host can reply to threads; admin sees updates in activity timeline.
 - Audit timeline records feedback and status changes with actor/time.
+- Notifications dropdown shows unread badge count for hosts, lists latest items, and marks items as read on click (navigates to event when applicable).
 
 ## Security Considerations
 - Only admins can access `/dashboard/review` and perform admin mutations (`requestChanges`, `approve`, `createThread`, `resolveThread`).
