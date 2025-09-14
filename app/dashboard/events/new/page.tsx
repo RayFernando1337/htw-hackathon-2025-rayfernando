@@ -1,39 +1,40 @@
 "use client";
 
-import * as React from "react";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
+import * as React from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 
+import { AutoSaveIndicator, StepIndicator } from "@/components/event-form/field-with-help";
+import {
+  AudienceStep,
+  BasicsStep,
+  LogisticsStep,
+  ReviewStep,
+} from "@/components/event-form/form-steps";
+import { Form } from "@/components/ui/form";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { EventFormData, eventSchema } from "@/lib/validations/event";
-import { Form } from "@/components/ui/form";
-import { StepIndicator } from "@/components/event-form/field-with-help";
-import { AutoSaveIndicator } from "@/components/event-form/field-with-help";
-import { 
-  BasicsStep, 
-  LogisticsStep, 
-  AudienceStep, 
-  ReviewStep 
-} from "@/components/event-form/form-steps";
 
 const FORM_STEPS = [
-  { id: 'basics', title: 'Event Basics', fields: ['title', 'shortDescription'] },
-  { id: 'logistics', title: 'Logistics', fields: ['eventDate', 'venue', 'capacity'] },
-  { id: 'audience', title: 'Audience', fields: ['formats', 'isPublic', 'targetAudience'] },
-  { id: 'review', title: 'Review & Submit' }
+  { id: "basics", title: "Event Basics", fields: ["title", "shortDescription"] },
+  { id: "logistics", title: "Logistics", fields: ["eventDate", "venue", "capacity"] },
+  { id: "audience", title: "Audience", fields: ["formats", "isPublic", "targetAudience"] },
+  { id: "review", title: "Review & Submit" },
 ];
 
 export default function CreateEventPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [draftId, setDraftId] = useState<Id<"events"> | null>(null);
-  const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  
+  const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved" | "error">(
+    "idle"
+  );
+
   const router = useRouter();
   const createDraft = useMutation(api.events.createDraft);
   const updateDraft = useMutation(api.events.updateDraft);
@@ -57,31 +58,28 @@ export default function CreateEventPage() {
   });
 
   // Auto-save functionality
-  const debouncedSave = useDebouncedCallback(
-    async (data: Partial<EventFormData>) => {
-      if (!data || Object.keys(data).length === 0) return;
-      
-      setAutoSaveStatus("saving");
-      
-      try {
-        if (draftId) {
-          await updateDraft({ id: draftId, ...data });
-        } else {
-          const id = await createDraft(data);
-          setDraftId(id);
-        }
-        setAutoSaveStatus("saved");
-        
-        // Reset to idle after 2 seconds
-        setTimeout(() => setAutoSaveStatus("idle"), 2000);
-      } catch (error) {
-        console.error("Auto-save failed:", error);
-        setAutoSaveStatus("error");
-        setTimeout(() => setAutoSaveStatus("idle"), 3000);
+  const debouncedSave = useDebouncedCallback(async (data: Partial<EventFormData>) => {
+    if (!data || Object.keys(data).length === 0) return;
+
+    setAutoSaveStatus("saving");
+
+    try {
+      if (draftId) {
+        await updateDraft({ id: draftId, ...data });
+      } else {
+        const id = await createDraft(data);
+        setDraftId(id);
       }
-    },
-    1000
-  );
+      setAutoSaveStatus("saved");
+
+      // Reset to idle after 2 seconds
+      setTimeout(() => setAutoSaveStatus("idle"), 2000);
+    } catch (error) {
+      console.error("Auto-save failed:", error);
+      setAutoSaveStatus("error");
+      setTimeout(() => setAutoSaveStatus("idle"), 3000);
+    }
+  }, 1000);
 
   // Watch form changes for auto-save
   React.useEffect(() => {
@@ -145,11 +143,7 @@ export default function CreateEventPage() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {currentStep === 0 && (
-            <BasicsStep
-              form={form}
-              onNext={nextStep}
-              isLoading={autoSaveStatus === "saving"}
-            />
+            <BasicsStep form={form} onNext={nextStep} isLoading={autoSaveStatus === "saving"} />
           )}
 
           {currentStep === 1 && (
