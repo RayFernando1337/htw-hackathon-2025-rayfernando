@@ -55,6 +55,8 @@ import {
 
 import { AudienceStep, BasicsStep, LogisticsStep } from "@/components/event-form/form-steps";
 import { DashboardSection, PageContainer, PageHeader } from "@/components/ui/page-container";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { AutoSaveIndicator } from "@/components/event-form/field-with-help";
 
 const statusConfig = {
   draft: {
@@ -150,6 +152,26 @@ export default function EventDetailPage() {
       : undefined,
   });
 
+  // Autosave form draft while editing
+  const draftKey = `event-edit:${eventId}`;
+  const watched = form.watch();
+  const { status: draftStatus, restore, clear: clearFormDraft } = useFormDraft({
+    key: draftKey,
+    data: isEditing ? watched : undefined,
+    enabled: Boolean(event) && isEditing,
+  });
+
+  // If a draft exists and we're entering edit mode, merge it once
+  if (isEditing && restore && event) {
+    // Apply only once per edit session
+    Object.entries(restore as any).forEach(([k, v]) => {
+      if (v !== undefined) {
+        // @ts-ignore
+        form.setValue(k, v, { shouldDirty: false });
+      }
+    });
+  }
+
   if (event === undefined) {
     return <EventDetailLoading />;
   }
@@ -209,6 +231,7 @@ export default function EventDetailPage() {
       }
 
       await submitEvent({ id: eventId });
+      await clearFormDraft();
       toast.success("Event submitted for review!");
     } catch (error: any) {
       toast.error(error.message || "Failed to submit event");
@@ -236,6 +259,7 @@ export default function EventDetailPage() {
               <StatusIcon className="w-3 h-3 mr-1" />
               {config.label}
             </Badge>
+            {isEditing && <AutoSaveIndicator status={draftStatus} />}
           </div>
         }
         subtitle={`Created ${format(new Date(event._creationTime), "PPP")}`}

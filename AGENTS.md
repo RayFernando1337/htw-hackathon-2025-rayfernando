@@ -16,6 +16,13 @@
 - `documentation/AGENTS.md`: Doc structure and contribution rules.
 - `public/AGENTS.md`: Static asset guidelines.
 
+## Autosave Drafts (Global Convention)
+- All long-lived forms in admin and dashboard should use autosave.
+- Use `hooks/useFormDraft` with a stable key per form instance (e.g., `event-edit:${eventId}`) to persist values in Convex `formDrafts`.
+- Field-level feedback uses `feedbackDrafts` and is already wired in `components/review/FeedbackDrawer`.
+- Always clear drafts on final submit or explicit save.
+- Show `AutoSaveIndicator` in headers when editing to reflect `idle|saving|saved|error` states.
+
 ## Build, Test, and Development Commands
 - `bun dev` or `npm run dev`: Run Next.js with Turbopack.
 - `bun run build` or `npm run build`: Production build.

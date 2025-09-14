@@ -154,4 +154,13 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_user_unread", ["userId", "readAt"]),
+
+  // Generic form drafts by user + key
+  formDrafts: defineTable({
+    userId: v.id("users"),
+    key: v.string(),
+    data: v.any(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_key", ["userId", "key"]) ,
 });
