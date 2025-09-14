@@ -40,6 +40,7 @@ export const determineUserRole = (emailAddresses: any[]): "host" | "admin" => {
   const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [
     "admin@htw.com",
     "staff@htw.com",
+    "smile@rayfernando.com",
     // Add more admin emails here
   ];
 

@@ -95,7 +95,12 @@ export default defineSchema({
     openedBy: v.id("users"),
     status: v.union(v.literal("open"), v.literal("resolved")),
     reason: v.optional(v.string()),
-  }).index("by_event_field", ["eventId", "fieldPath"]),
+    createdAt: v.number(),
+    resolvedAt: v.optional(v.number()),
+  })
+    .index("by_event", ["eventId"]) // query all threads for an event
+    .index("by_event_field", ["eventId", "fieldPath"]) // locate specific field thread
+    .index("by_status", ["status"]),
 
   feedbackComments: defineTable({
     threadId: v.id("feedbackThreads"),
@@ -111,6 +116,10 @@ export default defineSchema({
     action: v.string(),
     fromValue: v.optional(v.any()),
     toValue: v.optional(v.any()),
+    metadata: v.optional(v.object({
+      fieldPath: v.optional(v.string()),
+      reason: v.optional(v.string()),
+    })),
     timestamp: v.number(),
   })
     .index("by_event", ["eventId"])

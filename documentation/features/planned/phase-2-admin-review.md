@@ -6,12 +6,12 @@
 Implement the admin review system with field-level feedback, enabling precise communication between admins and hosts. This phase eliminates ambiguous email threads by anchoring feedback to specific fields.
 
 ## Success Criteria
-- [ ] Review queue shows all pending events
-- [ ] Field-level feedback can be added
-- [ ] Feedback threads persist and display correctly
-- [ ] Request changes updates event status
+- [x] Review queue shows all pending events
+- [x] Field-level feedback can be added
+- [x] Feedback threads persist and display correctly
+- [x] Request changes updates event status
 - [ ] Host receives notification of feedback
-- [ ] Audit log tracks all actions
+- [x] Audit log tracks all actions
 
 ## Technical Implementation
 

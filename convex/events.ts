@@ -362,3 +362,171 @@ export const getEventStats = query({
     return stats;
   }
 });
+
+// Admin: review queue
+export const getReviewQueue = query({
+  args: {
+    status: v.optional(v.array(v.union(v.literal("submitted"), v.literal("resubmitted"), v.literal("all"))))
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const admin = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!admin || admin.role !== "admin") return [];
+
+    // Fetch events by status
+    const statuses = args.status && args.status.length > 0 ? args.status : ["submitted", "resubmitted"];
+    const includeAll = statuses.includes("all" as any);
+
+    const events: any[] = [];
+    const pushWithEnrichment = async (ev: any) => {
+      const host = await ctx.db.get(ev.hostId);
+      // Count open threads
+      const threads = await ctx.db
+        .query("feedbackThreads")
+        .withIndex("by_event", (q: any) => q.eq("eventId", ev._id))
+        .collect();
+      const openThreadCount = threads.filter((t: any) => t.status === "open").length;
+      const h: any = host;
+      events.push({
+        ...ev,
+        host: { _id: h?._id, name: h?.name ?? "Host", orgName: h?.orgName ?? "" },
+        hasOpenThreads: openThreadCount > 0,
+        openThreadCount,
+      });
+    };
+
+    if (includeAll) {
+      const list = await ctx.db
+        .query("events")
+        .withIndex("by_status", (q) => q.eq("status", "submitted" as any))
+        .order("desc")
+        .collect();
+      const list2 = await ctx.db
+        .query("events")
+        .withIndex("by_status", (q) => q.eq("status", "resubmitted" as any))
+        .order("desc")
+        .collect();
+      for (const e of [...list, ...list2]) await pushWithEnrichment(e);
+    } else {
+      for (const s of statuses) {
+        const list = await ctx.db
+          .query("events")
+          .withIndex("by_status", (q) => q.eq("status", s as any))
+          .order("desc")
+          .collect();
+        for (const e of list) await pushWithEnrichment(e);
+      }
+    }
+
+    // Sort by submittedAt desc if available
+    events.sort((a, b) => (b.submittedAt ?? 0) - (a.submittedAt ?? 0));
+
+    return events;
+  },
+});
+
+export const getForReview = query({
+  args: { id: v.id("events") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const admin = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!admin || admin.role !== "admin") return null;
+
+    const event = await ctx.db.get(args.id);
+    if (!event) return null;
+
+    const host = await ctx.db.get(event.hostId);
+
+    const h: any = host;
+    return {
+    ...event,
+      host: { _id: h?._id, name: h?.name ?? "Host", orgName: h?.orgName ?? "" },
+  };
+  },
+});
+
+export const requestChanges = mutation({
+  args: {
+    id: v.id("events"),
+    message: v.string(),
+    fieldsWithIssues: v.optional(v.array(v.string())),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const admin = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!admin || admin.role !== "admin") throw new Error("Unauthorized");
+
+    const event = await ctx.db.get(args.id);
+    if (!event) throw new Error("Event not found");
+
+    if (!(event.status === "submitted" || event.status === "resubmitted")) {
+      throw new Error("Cannot request changes in current state");
+    }
+
+    await ctx.db.patch(args.id, { status: "changes_requested" });
+
+    // Log action
+    await ctx.db.insert("auditLog", {
+      eventId: args.id,
+      actorId: admin._id,
+      action: "status_change",
+      fromValue: event.status,
+      toValue: "changes_requested",
+      metadata: {},
+      timestamp: Date.now(),
+    });
+
+    // TODO: send notification to host with args.message and fieldsWithIssues
+  },
+});
+
+export const approve = mutation({
+  args: { id: v.id("events") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const admin = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!admin || admin.role !== "admin") throw new Error("Unauthorized");
+
+    const event = await ctx.db.get(args.id);
+    if (!event) throw new Error("Event not found");
+
+    if (!(event.status === "submitted" || event.status === "resubmitted")) {
+      throw new Error("Cannot approve in current state");
+    }
+
+    await ctx.db.patch(args.id, { status: "approved", approvedAt: Date.now() });
+
+    await ctx.db.insert("auditLog", {
+      eventId: args.id,
+      actorId: admin._id,
+      action: "status_change",
+      fromValue: event.status,
+      toValue: "approved",
+      metadata: {},
+      timestamp: Date.now(),
+    });
+  },
+});
+
