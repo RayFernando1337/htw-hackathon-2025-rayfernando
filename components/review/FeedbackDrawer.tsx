@@ -39,12 +39,12 @@ export function FeedbackDrawer({ open, onClose, fieldKey, title, thread, onSubmi
 
   return (
     <Sheet open={open} onOpenChange={(v) => (!v ? onClose() : null)}>
-      <SheetContent side="right" className="w-[500px] sm:w-[600px]">
-        <SheetHeader>
+      <SheetContent side="right" className="w-full max-w-[100vw] sm:w-[600px] sm:max-w-[600px] p-0">
+        <SheetHeader className="px-4 sm:px-6 pt-4">
           <SheetTitle>{isRequestChanges ? "Request Changes" : `Feedback: ${title}`}</SheetTitle>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-4 space-y-6 px-4 sm:px-6 pb-6 overflow-y-auto">
           {!isRequestChanges && (
             <div>
               <Label>Quick Reasons</Label>

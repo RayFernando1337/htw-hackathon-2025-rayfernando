@@ -17,6 +17,7 @@ interface FieldWithHelpProps {
   required?: boolean;
   children: React.ReactNode;
   className?: string;
+  right?: React.ReactNode; // e.g., feedback badge
 }
 
 export function FieldWithHelp({
@@ -26,13 +27,17 @@ export function FieldWithHelp({
   required = false,
   children,
   className,
+  right,
 }: FieldWithHelpProps) {
   return (
     <FormItem className={cn("space-y-2", className)}>
-      <FormLabel className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-        {label}
-        {required && <span className="text-destructive ml-1">*</span>}
-      </FormLabel>
+      <div className="flex items-center justify-between">
+        <FormLabel className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </FormLabel>
+        {right}
+      </div>
       <FormControl>{children}</FormControl>
       {help && <FormDescription className="text-xs text-muted-foreground">{help}</FormDescription>}
       {error && <FormMessage>{error}</FormMessage>}

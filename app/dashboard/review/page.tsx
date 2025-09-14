@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MessageSquare, ArrowRight } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/ui/page-container";
 
 export default function ReviewQueuePage() {
   const [statusFilter, setStatusFilter] = useState<"all" | "submitted" | "resubmitted">("submitted");
@@ -18,14 +19,11 @@ export default function ReviewQueuePage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Review Queue</h1>
-        <div className="flex gap-2">
-          <Select
-            value={statusFilter}
-            onValueChange={(v: any) => setStatusFilter(v)}
-          >
+    <PageContainer className="space-y-6" maxWidth="xl">
+      <PageHeader
+        title="Review Queue"
+        right={
+          <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
@@ -35,8 +33,8 @@ export default function ReviewQueuePage() {
               <SelectItem value="resubmitted">Resubmitted</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid gap-4">
         {events?.map((event: any) => (
@@ -86,6 +84,6 @@ export default function ReviewQueuePage() {
           </Card>
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }

@@ -128,6 +128,8 @@ export default function EventDetailPage() {
   const updateDraft = useMutation(api.events.updateDraft);
   const submitEvent = useMutation(api.events.submitEvent);
   const deleteEvent = useMutation(api.events.deleteEvent);
+  const threads = useQuery(api.feedback.getThreadsByEvent, { eventId } as any);
+  const addComment = useMutation(api.feedback.addComment);
 
   const form = useForm<EventEditFormData>({
     resolver: zodResolver(eventEditSchema),
@@ -330,6 +332,62 @@ export default function EventDetailPage() {
         <StatusIcon className="h-4 w-4" />
         <AlertDescription>{config.description}</AlertDescription>
       </Alert>
+
+      {/* Feedback (if any) */}
+      {threads && threads.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Feedback from Admin</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {threads
+              ?.filter((t: any) => t.status === "open")
+              .map((t: any) => (
+                <div key={t._id} className="border rounded p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium">Field: {t.fieldPath}</div>
+                    {t.reason && (
+                      <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-200">{t.reason}</Badge>
+                    )}
+                  </div>
+                  <div className="mt-2 space-y-2">
+                    {t.comments?.map((c: any) => (
+                      <div key={c._id} className="text-sm text-muted-foreground">
+                        <span className="text-foreground font-medium">{c.author?.name || "User"}:</span> {c.message}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Reply to feedback..."
+                      className="flex-1 h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                      onKeyDown={async (e) => {
+                        const target = e.target as HTMLInputElement;
+                        if (e.key === "Enter" && target.value.trim()) {
+                          await addComment({ threadId: t._id, message: target.value.trim() } as any);
+                          target.value = "";
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={async (e) => {
+                        const input = (e.currentTarget.previousSibling as HTMLInputElement);
+                        if (input && input.value.trim()) {
+                          await addComment({ threadId: t._id, message: input.value.trim() } as any);
+                          input.value = "";
+                        }
+                      }}
+                    >
+                      Reply
+                    </Button>
+                  </div>
+                </div>
+              ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Edit Form or View Mode */}
       {isEditing ? (

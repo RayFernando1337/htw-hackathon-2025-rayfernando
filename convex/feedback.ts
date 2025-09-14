@@ -62,7 +62,17 @@ export const createThread = mutation({
       metadata: { fieldPath: args.fieldPath, reason: args.reason },
     });
 
-    // TODO: send notification to host
+    // Create notification for host
+    const event = await ctx.db.get(args.eventId);
+    if (event) {
+      await ctx.db.insert("notifications", {
+        userId: event.hostId,
+        type: "feedback",
+        eventId: args.eventId,
+        message: `Feedback added on ${args.fieldPath}`,
+        createdAt: Date.now(),
+      });
+    }
 
     return threadId;
   },

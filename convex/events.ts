@@ -492,7 +492,14 @@ export const requestChanges = mutation({
       timestamp: Date.now(),
     });
 
-    // TODO: send notification to host with args.message and fieldsWithIssues
+    // Notification to host
+    await ctx.db.insert("notifications", {
+      userId: event.hostId,
+      type: "status_change",
+      eventId: args.id,
+      message: `Changes requested: ${args.message}`,
+      createdAt: Date.now(),
+    });
   },
 });
 
@@ -526,6 +533,14 @@ export const approve = mutation({
       toValue: "approved",
       metadata: {},
       timestamp: Date.now(),
+    });
+
+    await ctx.db.insert("notifications", {
+      userId: event.hostId,
+      type: "status_change",
+      eventId: args.id,
+      message: `Your event was approved`,
+      createdAt: Date.now(),
     });
   },
 });

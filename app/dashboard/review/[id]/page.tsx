@@ -11,6 +11,7 @@ import { CheckCircle, MessageSquare } from "lucide-react";
 import { ReviewField } from "@/components/review/ReviewField";
 import { FeedbackDrawer } from "@/components/review/FeedbackDrawer";
 import { AuditTimeline } from "@/components/review/AuditTimeline";
+import { PageContainer } from "@/components/ui/page-container";
 
 export default function ReviewEventPage() {
   const params = useParams<{ id: string }>();
@@ -71,9 +72,10 @@ export default function ReviewEventPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto grid grid-cols-3 gap-6">
-      <div className="col-span-2 space-y-6">
-        <Card>
+    <PageContainer className="" maxWidth="full">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="col-span-1 lg:col-span-2 space-y-4 sm:space-y-6">
+          <Card>
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
@@ -107,8 +109,8 @@ export default function ReviewEventPage() {
         ))}
       </div>
 
-      <div className="space-y-4">
-        <Card>
+        <div className="space-y-4 col-span-1">
+          <Card>
           <CardHeader>
             <CardTitle className="text-lg">Actions</CardTitle>
           </CardHeader>
@@ -132,16 +134,17 @@ export default function ReviewEventPage() {
             <AuditTimeline eventId={event._id} />
           </CardContent>
         </Card>
-      </div>
+        </div>
+           </div>
 
-      <FeedbackDrawer
+        <FeedbackDrawer
         open={!!selectedField}
         onClose={() => setSelectedField(null)}
         fieldKey={selectedField}
         title={selectedTitle}
         thread={selectedThread}
         onSubmit={handleSubmitFeedback}
-      />
-    </div>
+        />
+          </PageContainer>
   );
 }

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { EVENT_FORMATS, EventEditFormData } from "@/lib/validations/event";
 import { UseFormReturn } from "react-hook-form";
 import { DatePicker, FieldWithHelp, MultiSelect } from "./field-with-help";
+import FeedbackBadge from "./FeedbackBadge";
 
 interface StepProps {
   form: UseFormReturn<EventEditFormData>;
@@ -45,6 +46,7 @@ export function BasicsStep({ form, onNext, isLoading }: StepProps) {
               help="Be compelling and clear. This will be the first thing people see."
               error={error?.message}
               required
+              right={<FeedbackBadge fieldKey="title" />}
             >
               <Input placeholder="e.g., AI Founders Mixer: Building the Future" {...field} />
             </FieldWithHelp>
@@ -60,6 +62,7 @@ export function BasicsStep({ form, onNext, isLoading }: StepProps) {
               help="Include speakers, what makes this event special, and key takeaways. This appears in listings."
               error={error?.message}
               required
+              right={<FeedbackBadge fieldKey="shortDescription" />}
             >
               <Textarea
                 placeholder="Join us for an evening of networking with AI startup founders. We'll discuss fundraising strategies, product development, and the latest trends in artificial intelligence..."
@@ -113,6 +116,7 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
               help="Check the HTW calendar for conflicts. Consider timezone for virtual events."
               error={error?.message}
               required
+              right={<FeedbackBadge fieldKey="eventDate" />}
             >
               <DatePicker
                 value={field.value || ""}
@@ -132,6 +136,7 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
               help="Your office, a partner's space, or see the approved venue list."
               error={error?.message}
               required
+              right={<FeedbackBadge fieldKey="venue" />}
             >
               <Input placeholder="e.g., Acme Corp Office, 123 Main St, SF" {...field} />
             </FieldWithHelp>
@@ -147,6 +152,7 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
               help="Set 20-30% above your ideal attendance to account for no-shows."
               error={error?.message}
               required
+              right={<FeedbackBadge fieldKey="capacity" />}
             >
               <Input
                 type="number"

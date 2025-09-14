@@ -130,4 +130,16 @@ export default defineSchema({
     .index("byPaymentId", ["payment_id"])
     .index("byUserId", ["userId"])
     .index("byPayerUserId", ["payer.user_id"]),
+
+  // In-app notifications (simple)
+  notifications: defineTable({
+    userId: v.id("users"),
+    type: v.string(), // feedback|status_change
+    eventId: v.optional(v.id("events")),
+    message: v.string(),
+    readAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_unread", ["userId", "readAt"]),
 });

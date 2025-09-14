@@ -17,8 +17,8 @@ export function ReviewField({ field, value, thread, onFeedback }: ReviewFieldPro
 
   return (
     <div className={`p-3 rounded border ${hasFeedback ? "bg-yellow-50 border-yellow-200" : "border-transparent"}`}>
-      <div className="flex items-start justify-between">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="font-medium">{field.label}</span>
             {field.required ? <Badge variant="secondary">Required</Badge> : null}
@@ -26,11 +26,11 @@ export function ReviewField({ field, value, thread, onFeedback }: ReviewFieldPro
               <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-200">Feedback</Badge>
             ) : null}
           </div>
-          <div className="text-sm text-muted-foreground mt-1">
+          <div className="text-sm text-muted-foreground mt-1 break-words">
             {renderValue(value)}
           </div>
         </div>
-        <div>
+        <div className="shrink-0">
           <Button size="sm" variant={hasFeedback ? "outline" : "secondary"} onClick={onFeedback}>
             <MessageSquare className="h-4 w-4 mr-2" />
             {hasFeedback ? "Update Feedback" : "Add Feedback"}
