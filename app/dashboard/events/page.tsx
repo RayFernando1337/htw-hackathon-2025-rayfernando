@@ -62,27 +62,27 @@ function EventCard({ event }: { event: Event }) {
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader>
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <CardTitle className="line-clamp-2">{event.title}</CardTitle>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="line-clamp-2 break-words">{event.title}</CardTitle>
             <CardDescription className="mt-2">
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1 min-w-0">
                   <Calendar className="h-4 w-4" />
                   {event.eventDate ? format(new Date(event.eventDate), "PPP") : "Date TBD"}
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 min-w-0">
                   <MapPin className="h-4 w-4" />
                   {event.venue || "Venue TBD"}
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 min-w-0">
                   <Users className="h-4 w-4" />
                   {event.capacity} people
                 </div>
               </div>
             </CardDescription>
           </div>
-          <Badge className={config.color}>{config.label}</Badge>
+          <Badge className={"self-start sm:self-auto " + config.color}>{config.label}</Badge>
         </div>
       </CardHeader>
 
@@ -102,14 +102,16 @@ function EventCard({ event }: { event: Event }) {
         )}
       </CardContent>
 
-      <CardFooter className="flex justify-between items-center">
+      <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-xs text-muted-foreground">{config.description}</div>
 
-        <Button variant="outline" asChild>
-          <Link href={`/dashboard/events/${event._id}`}>
-            {canEdit ? "Continue Editing" : "View Details"}
-          </Link>
-        </Button>
+        <div className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto" variant="outline" asChild>
+            <Link href={`/dashboard/events/${event._id}`}>
+              {canEdit ? "Continue Editing" : "View Details"}
+            </Link>
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
@@ -139,16 +141,16 @@ function EventsLoading() {
 
 function EmptyState() {
   return (
-    <Card className="text-center py-12">
+    <Card className="text-center py-10 sm:py-12">
       <CardContent>
-        <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+        <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 bg-muted rounded-full flex items-center justify-center mb-4">
           <Calendar className="w-8 h-8 text-muted-foreground" />
         </div>
         <CardTitle className="mb-2">No events yet</CardTitle>
         <CardDescription className="mb-4">
           Start by creating your first HTW event. We'll guide you through the process.
         </CardDescription>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/dashboard/events/new">
             <Plus className="mr-2 h-4 w-4" />
             Create Your First Event
@@ -169,14 +171,14 @@ export default function MyEventsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">My Events</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">My Events</h1>
           <p className="text-muted-foreground mt-1">
             Manage your HTW event submissions and track their progress
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/dashboard/events/new">
             <Plus className="mr-2 h-4 w-4" />
             Create Event
@@ -186,7 +188,7 @@ export default function MyEventsPage() {
 
       {/* Stats Overview */}
       {stats && stats.totalEvents > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold">{stats.totalEvents}</div>

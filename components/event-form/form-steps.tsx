@@ -71,7 +71,12 @@ export function BasicsStep({ form, onNext, isLoading }: StepProps) {
         />
 
         <div className="flex justify-end">
-          <Button type="button" onClick={handleNext} disabled={isLoading}>
+          <Button
+            type="button"
+            onClick={handleNext}
+            disabled={isLoading}
+            className="w-full sm:w-auto"
+          >
             Next: Logistics
           </Button>
         </div>
@@ -149,11 +154,22 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
           )}
         />
 
-        <div className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onPrev} disabled={isLoading}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onPrev}
+            disabled={isLoading}
+            className="w-full sm:w-auto"
+          >
             Previous
           </Button>
-          <Button type="button" onClick={handleNext} disabled={isLoading}>
+          <Button
+            type="button"
+            onClick={handleNext}
+            disabled={isLoading}
+            className="w-full sm:w-auto"
+          >
             Next: Audience
           </Button>
         </div>
@@ -286,11 +302,22 @@ export function AudienceStep({ form, onNext, onPrev, isLoading }: StepProps) {
           )}
         />
 
-        <div className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onPrev} disabled={isLoading}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onPrev}
+            disabled={isLoading}
+            className="w-full sm:w-auto"
+          >
             Previous
           </Button>
-          <Button type="button" onClick={handleNext} disabled={isLoading}>
+          <Button
+            type="button"
+            onClick={handleNext}
+            disabled={isLoading}
+            className="w-full sm:w-auto"
+          >
             Next: Review
           </Button>
         </div>
@@ -386,11 +413,21 @@ export function ReviewStep({
           )}
         />
 
-        <div className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onPrev} disabled={isLoading}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onPrev}
+            disabled={isLoading}
+            className="w-full sm:w-auto"
+          >
             Previous
           </Button>
-          <Button type="submit" disabled={isLoading || !values.agreementAccepted}>
+          <Button
+            type="submit"
+            disabled={isLoading || !values.agreementAccepted}
+            className="w-full sm:w-auto"
+          >
             {isLoading ? "Submitting..." : "Submit Event for Review"}
           </Button>
         </div>

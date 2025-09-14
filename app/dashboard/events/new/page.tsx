@@ -66,7 +66,7 @@ export default function CreateEventPage() {
     try {
       // Transform agreementAccepted to agreementAcceptedAt for backend
       const saveData = { ...data };
-      if ('agreementAccepted' in saveData) {
+      if ("agreementAccepted" in saveData) {
         if (saveData.agreementAccepted) {
           (saveData as any).agreementAcceptedAt = Date.now();
         }
@@ -144,9 +144,9 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Create New Event</h1>
+    <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6">
+      <div className="flex flex-col gap-2 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl sm:text-3xl font-bold">Create New Event</h1>
         <AutoSaveIndicator status={autoSaveStatus} />
       </div>
 

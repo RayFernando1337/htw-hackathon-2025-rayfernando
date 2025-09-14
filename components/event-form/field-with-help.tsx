@@ -55,28 +55,35 @@ interface StepIndicatorProps {
 
 export function StepIndicator({ steps, currentStep, className }: StepIndicatorProps) {
   return (
-    <div className={cn("flex items-center justify-between mb-8", className)}>
+    <div
+      className={cn(
+        "flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between",
+        className
+      )}
+    >
       {steps.map((step, index) => (
-        <div key={step.id} className="flex items-center flex-1">
-          <div className="flex items-center">
+        <div key={step.id} className="flex items-center sm:flex-1">
+          <div className="flex items-center min-w-0">
             <div
               className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium",
+                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium shrink-0",
                 index < currentStep
                   ? "bg-primary text-primary-foreground"
                   : index === currentStep
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground"
               )}
+              aria-current={index === currentStep ? "step" : undefined}
             >
               {index < currentStep ? "✓" : index + 1}
             </div>
-            <div className="ml-3">
+            <div className="ml-3 min-w-0">
               <p
                 className={cn(
-                  "text-sm font-medium",
+                  "text-sm font-medium truncate sm:whitespace-normal sm:break-words",
                   index <= currentStep ? "text-foreground" : "text-muted-foreground"
                 )}
+                title={step.title}
               >
                 {step.title}
               </p>
@@ -84,7 +91,10 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
           </div>
           {index < steps.length - 1 && (
             <div
-              className={cn("flex-1 h-px mx-4", index < currentStep ? "bg-primary" : "bg-border")}
+              className={cn(
+                "hidden sm:flex flex-1 h-px mx-4",
+                index < currentStep ? "bg-primary" : "bg-border"
+              )}
             />
           )}
         </div>
@@ -128,7 +138,7 @@ export function MultiSelect({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
         {options.map((option) => {
           const isSelected = value.includes(option.value);
           const isDisabled = !isSelected && value.length >= maxSelections;
@@ -140,7 +150,7 @@ export function MultiSelect({
               onClick={() => handleToggle(option.value)}
               disabled={isDisabled}
               className={cn(
-                "px-3 py-2 text-sm rounded-md border text-left transition-colors",
+                "w-full min-h-9 px-3 py-2 text-sm rounded-md border text-left transition-colors",
                 isSelected
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-background border-input hover:bg-accent hover:text-accent-foreground",
