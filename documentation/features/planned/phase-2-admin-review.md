@@ -1,3 +1,12 @@
+# Phase 2: Admin Review & Field-Level Feedback (Moved)
+
+This planned spec has moved to the Active section following the documentation standards.
+
+- Active Spec: `documentation/features/active/phase-2-admin-review-spec.md`
+- Progress: `documentation/features/active/phase-2-admin-review-progress.md`
+
+Below is the original planning content for historical reference.
+
 # Phase 2: Admin Review & Field-Level Feedback
 
 **Timeline: 3-4 days** | **Complexity: High** | **Priority: Critical**
