@@ -46,7 +46,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { EventFormData, eventSchema } from "@/lib/validations/event";
+import { EventEditFormData, eventEditSchema } from "@/lib/validations/event";
 
 import { AudienceStep, BasicsStep, LogisticsStep } from "@/components/event-form/form-steps";
 import { DashboardSection, PageContainer, PageHeader } from "@/components/ui/page-container";
@@ -124,8 +124,8 @@ export default function EventDetailPage() {
   const submitEvent = useMutation(api.events.submitEvent);
   const deleteEvent = useMutation(api.events.deleteEvent);
 
-  const form = useForm<EventFormData>({
-    resolver: zodResolver(eventSchema),
+  const form = useForm<EventEditFormData>({
+    resolver: zodResolver(eventEditSchema),
     values: event
       ? {
           title: event.title,
@@ -168,7 +168,7 @@ export default function EventDetailPage() {
   const canSubmit = event.status === "draft" || event.status === "changes_requested";
   const StatusIcon = config.icon;
 
-  const handleSave = async (data: EventFormData) => {
+  const handleSave = async (data: EventEditFormData) => {
     try {
       // Do not send agreementAccepted to backend; convert to agreementAcceptedAt
       const { agreementAccepted, ...rest } = data;
@@ -314,7 +314,12 @@ export default function EventDetailPage() {
       {/* Edit Form or View Mode */}
       {isEditing ? (
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSave, () =>
+              toast.error("Please fix any invalid values and try again.")
+            )}
+            className="space-y-6"
+          >
             <BasicsStep form={form} />
             <LogisticsStep form={form} />
             <AudienceStep form={form} />

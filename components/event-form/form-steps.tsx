@@ -8,12 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { EVENT_FORMATS, EventFormData } from "@/lib/validations/event";
+import { EVENT_FORMATS, EventEditFormData } from "@/lib/validations/event";
 import { UseFormReturn } from "react-hook-form";
 import { DatePicker, FieldWithHelp, MultiSelect } from "./field-with-help";
 
 interface StepProps {
-  form: UseFormReturn<EventFormData>;
+  form: UseFormReturn<EventEditFormData>;
   onNext?: () => void;
   onPrev?: () => void;
   isLoading?: boolean;
@@ -114,7 +114,11 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
               error={error?.message}
               required
             >
-              <DatePicker value={field.value} onChange={field.onChange} placeholder="Select date" />
+              <DatePicker
+                value={field.value || ""}
+                onChange={field.onChange}
+                placeholder="Select date"
+              />
             </FieldWithHelp>
           )}
         />

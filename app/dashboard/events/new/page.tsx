@@ -20,7 +20,7 @@ import { Form } from "@/components/ui/form";
 import { PageContainer, PageHeader } from "@/components/ui/page-container";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { EventFormData, eventSchema } from "@/lib/validations/event";
+import { EventEditFormData, eventDraftSchema } from "@/lib/validations/event";
 
 const FORM_STEPS = [
   { id: "basics", title: "Event Basics", fields: ["title", "shortDescription"] },
@@ -41,8 +41,8 @@ export default function CreateEventPage() {
   const updateDraft = useMutation(api.events.updateDraft);
   const submitEvent = useMutation(api.events.submitEvent);
 
-  const form = useForm<EventFormData>({
-    resolver: zodResolver(eventSchema),
+  const form = useForm<EventEditFormData>({
+    resolver: zodResolver(eventDraftSchema),
     defaultValues: {
       title: "",
       shortDescription: "",
@@ -59,7 +59,7 @@ export default function CreateEventPage() {
   });
 
   // Auto-save functionality
-  const debouncedSave = useDebouncedCallback(async (data: Partial<EventFormData>) => {
+  const debouncedSave = useDebouncedCallback(async (data: Partial<EventEditFormData>) => {
     if (!data || Object.keys(data).length === 0) return;
 
     setAutoSaveStatus("saving");
@@ -104,7 +104,7 @@ export default function CreateEventPage() {
     return () => subscription.unsubscribe();
   }, [form, debouncedSave]);
 
-  const onSubmit = async (data: EventFormData) => {
+  const onSubmit = async (data: EventEditFormData) => {
     if (!draftId) {
       toast.error("Please save your draft first");
       return;
