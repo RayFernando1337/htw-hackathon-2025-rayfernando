@@ -64,10 +64,19 @@ export default function CreateEventPage() {
     setAutoSaveStatus("saving");
 
     try {
+      // Transform agreementAccepted to agreementAcceptedAt for backend
+      const saveData = { ...data };
+      if ('agreementAccepted' in saveData) {
+        if (saveData.agreementAccepted) {
+          (saveData as any).agreementAcceptedAt = Date.now();
+        }
+        delete (saveData as any).agreementAccepted;
+      }
+
       if (draftId) {
-        await updateDraft({ id: draftId, ...data });
+        await updateDraft({ id: draftId, ...saveData });
       } else {
-        const id = await createDraft(data);
+        const id = await createDraft(saveData);
         setDraftId(id);
       }
       setAutoSaveStatus("saved");
@@ -101,11 +110,14 @@ export default function CreateEventPage() {
     }
 
     try {
+      // Transform the data for backend, removing agreementAccepted and using agreementAcceptedAt
+      const { agreementAccepted, ...submitData } = data;
+
       // Update with final data including agreement
       await updateDraft({
         id: draftId,
-        ...data,
-        agreementAcceptedAt: Date.now(),
+        ...submitData,
+        agreementAcceptedAt: agreementAccepted ? Date.now() : undefined,
       });
 
       // Submit the event
