@@ -1,8 +1,14 @@
 "use client";
 
-import * as React from "react";
-import { FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
+import {
+  FormControl,
+  FormDescription,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { cn } from "@/lib/utils";
+import * as React from "react";
 
 interface FieldWithHelpProps {
   label: string;
@@ -19,7 +25,7 @@ export function FieldWithHelp({
   error,
   required = false,
   children,
-  className
+  className,
 }: FieldWithHelpProps) {
   return (
     <FormItem className={cn("space-y-2", className)}>
@@ -27,14 +33,8 @@ export function FieldWithHelp({
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
       </FormLabel>
-      <FormControl>
-        {children}
-      </FormControl>
-      {help && (
-        <FormDescription className="text-xs text-muted-foreground">
-          {help}
-        </FormDescription>
-      )}
+      <FormControl>{children}</FormControl>
+      {help && <FormDescription className="text-xs text-muted-foreground">{help}</FormDescription>}
       {error && <FormMessage>{error}</FormMessage>}
     </FormItem>
   );
@@ -65,8 +65,8 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
                 index < currentStep
                   ? "bg-primary text-primary-foreground"
                   : index === currentStep
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
               )}
             >
               {index < currentStep ? "✓" : index + 1}
@@ -84,10 +84,7 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
           </div>
           {index < steps.length - 1 && (
             <div
-              className={cn(
-                "flex-1 h-px mx-4",
-                index < currentStep ? "bg-primary" : "bg-border"
-              )}
+              className={cn("flex-1 h-px mx-4", index < currentStep ? "bg-primary" : "bg-border")}
             />
           )}
         </div>
@@ -103,7 +100,7 @@ export interface MultiSelectOption {
 }
 
 interface MultiSelectProps {
-  options: MultiSelectOption[];
+  options: ReadonlyArray<MultiSelectOption>;
   value: string[];
   onChange: (value: string[]) => void;
   maxSelections?: number;
@@ -117,13 +114,13 @@ export function MultiSelect({
   onChange,
   maxSelections = 3,
   placeholder = "Select options...",
-  className
+  className,
 }: MultiSelectProps) {
   const handleToggle = (optionValue: string) => {
     const newValue = value.includes(optionValue)
-      ? value.filter(v => v !== optionValue)
+      ? value.filter((v) => v !== optionValue)
       : [...value, optionValue];
-    
+
     if (newValue.length <= maxSelections) {
       onChange(newValue);
     }
@@ -135,7 +132,7 @@ export function MultiSelect({
         {options.map((option) => {
           const isSelected = value.includes(option.value);
           const isDisabled = !isSelected && value.length >= maxSelections;
-          
+
           return (
             <button
               key={option.value}
@@ -173,16 +170,10 @@ interface DatePickerProps {
   min?: string;
 }
 
-export function DatePicker({ 
-  value, 
-  onChange, 
-  className, 
-  placeholder,
-  min 
-}: DatePickerProps) {
+export function DatePicker({ value, onChange, className, placeholder, min }: DatePickerProps) {
   // Get today's date in YYYY-MM-DD format as minimum
-  const today = new Date().toISOString().split('T')[0];
-  
+  const today = new Date().toISOString().split("T")[0];
+
   return (
     <input
       type="date"

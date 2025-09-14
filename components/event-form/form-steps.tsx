@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { EVENT_FORMATS, EventFormData } from "@/lib/validations/event";
 import { UseFormReturn } from "react-hook-form";
-import { DatePicker, FieldWithHelp, MultiSelect, MultiSelectOption } from "./field-with-help";
+import { DatePicker, FieldWithHelp, MultiSelect } from "./field-with-help";
 
 interface StepProps {
   form: UseFormReturn<EventFormData>;
@@ -190,7 +190,7 @@ export function AudienceStep({ form, onNext, onPrev, isLoading }: StepProps) {
               required
             >
               <MultiSelect
-                options={EVENT_FORMATS as unknown as MultiSelectOption[]}
+                options={EVENT_FORMATS}
                 value={field.value || []}
                 onChange={field.onChange}
                 maxSelections={3}
