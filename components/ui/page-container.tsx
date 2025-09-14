@@ -57,3 +57,27 @@ export function PageHeader({
     </div>
   );
 }
+
+export function DashboardSection({
+  title,
+  description,
+  children,
+  className,
+}: {
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={cn("space-y-4 sm:space-y-6", className)}>
+      {(title || description) && (
+        <header className="space-y-1">
+          {title && <h2 className="text-lg sm:text-xl font-semibold">{title}</h2>}
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        </header>
+      )}
+      {children}
+    </section>
+  );
+}

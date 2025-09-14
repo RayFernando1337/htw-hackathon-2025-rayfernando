@@ -43,6 +43,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { EventFormData, eventSchema } from "@/lib/validations/event";
 
 import { AudienceStep, BasicsStep, LogisticsStep } from "@/components/event-form/form-steps";
+import { DashboardSection, PageContainer, PageHeader } from "@/components/ui/page-container";
 
 const statusConfig = {
   draft: {
@@ -195,76 +196,69 @@ export default function EventDetailPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <PageContainer className="space-y-6" maxWidth="full">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <div>
+      <PageHeader
+        title={
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold break-words">{event.title}</h1>
+            <Badge className={config.color}>
+              <StatusIcon className="w-3 h-3 mr-1" />
+              {config.label}
+            </Badge>
+          </div>
+        }
+        subtitle={`Created ${format(new Date(event._creationTime), "PPP")}`}
+        right={
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push("/dashboard/events")}
+              onClick={() => router.push(`/dashboard/events`)}
               className="w-full sm:w-auto"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Events
             </Button>
+            {canEdit && !isEditing && (
+              <Button
+                variant="outline"
+                onClick={() => setIsEditing(true)}
+                className="w-full sm:w-auto"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            )}
+            {canSubmit && !isEditing && (
+              <Button onClick={handleSubmit} className="w-full sm:w-auto">
+                Submit for Review
+              </Button>
+            )}
+            {canDelete && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="w-full sm:w-auto">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this event? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-xl sm:text-2xl font-bold break-words">{event.title}</h1>
-              <Badge className={config.color}>
-                <StatusIcon className="w-3 h-3 mr-1" />
-                {config.label}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Created {format(new Date(event._creationTime), "PPP")}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          {canEdit && !isEditing && (
-            <Button
-              variant="outline"
-              onClick={() => setIsEditing(true)}
-              className="w-full sm:w-auto"
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          )}
-
-          {canSubmit && !isEditing && (
-            <Button onClick={handleSubmit} className="w-full sm:w-auto">
-              Submit for Review
-            </Button>
-          )}
-
-          {canDelete && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="w-full sm:w-auto">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Event</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this event? This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </div>
-      </div>
+        }
+      />
 
       {/* Status Alert */}
       <Alert>
@@ -291,7 +285,7 @@ export default function EventDetailPage() {
           </form>
         </Form>
       ) : (
-        <div className="grid gap-6">
+        <DashboardSection>
           {/* Event Details */}
           <Card>
             <CardHeader>
@@ -412,8 +406,8 @@ export default function EventDetailPage() {
               </CardContent>
             </Card>
           )}
-        </div>
+        </DashboardSection>
       )}
-    </div>
+    </PageContainer>
   );
 }

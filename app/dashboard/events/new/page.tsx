@@ -17,6 +17,7 @@ import {
   ReviewStep,
 } from "@/components/event-form/form-steps";
 import { Form } from "@/components/ui/form";
+import { PageContainer, PageHeader } from "@/components/ui/page-container";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { EventFormData, eventSchema } from "@/lib/validations/event";
@@ -145,22 +146,16 @@ export default function CreateEventPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-6">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Create New Event</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <p className="text-sm text-muted-foreground sm:hidden">
-                  Step {currentStep + 1} of {FORM_STEPS.length}: {FORM_STEPS[currentStep].title}
-                </p>
-                {/* Inline autosave indicator in header row to avoid layout shift */}
-                <AutoSaveIndicator status={autoSaveStatus} className="ml-auto" />
-              </div>
-            </div>
-          </div>
-        </div>
+      <PageContainer className="py-4 sm:py-6" maxWidth="4xl">
+        <PageHeader
+          title="Create New Event"
+          subtitle={
+            <span className="sm:hidden">
+              Step {currentStep + 1} of {FORM_STEPS.length}: {FORM_STEPS[currentStep].title}
+            </span>
+          }
+          right={<AutoSaveIndicator status={autoSaveStatus} />}
+        />
 
         {/* Step Progress */}
         <div className="mb-6 sm:mb-8">
@@ -204,7 +199,7 @@ export default function CreateEventPage() {
             )}
           </form>
         </Form>
-      </div>
+      </PageContainer>
     </div>
   );
 }

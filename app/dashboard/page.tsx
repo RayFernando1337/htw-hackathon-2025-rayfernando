@@ -1,14 +1,24 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { useUser } from "@clerk/nextjs";
-import { api } from "@/convex/_generated/api";
 import { SectionCards } from "@/app/dashboard/section-cards";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { PageContainer, PageHeader } from "@/components/ui/page-container";
+import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
+import { useQuery } from "convex/react";
+import {
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  FileText,
+  Plus,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
-import { CalendarDays, Users, FileText, CheckCircle2, Clock, AlertCircle, Sparkles, Plus, ArrowRight } from "lucide-react";
 
 export default function Page() {
   const { user } = useUser();
@@ -17,31 +27,26 @@ export default function Page() {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Section */}
-      <div className="px-4 lg:px-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Welcome back, {user?.firstName || "Host"}!
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Manage your HTW events and track submission status
-            </p>
-          </div>
-          <Link href="/dashboard/events/new">
-            <Button size="lg" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Create New Event
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <PageContainer>
+        <PageHeader
+          title={`Welcome back, ${user?.firstName || "Host"}!`}
+          subtitle="Manage your HTW events and track submission status"
+          right={
+            <Link href="/dashboard/events/new">
+              <Button size="lg" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Create New Event
+              </Button>
+            </Link>
+          }
+        />
+      </PageContainer>
 
       {/* Stats Overview */}
       <SectionCards stats={stats} />
 
       {/* Feature Highlights */}
-      <div className="px-4 lg:px-6">
+      <PageContainer>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Event Submission */}
           <Card className="relative overflow-hidden">
@@ -49,9 +54,7 @@ export default function Page() {
             <CardHeader>
               <FileText className="h-8 w-8 text-blue-600 mb-2" />
               <CardTitle>Event Submission</CardTitle>
-              <CardDescription>
-                Multi-step form with auto-save and validation
-              </CardDescription>
+              <CardDescription>Multi-step form with auto-save and validation</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm">
@@ -82,9 +85,7 @@ export default function Page() {
             <CardHeader>
               <CalendarDays className="h-8 w-8 text-purple-600 mb-2" />
               <CardTitle>Event Management</CardTitle>
-              <CardDescription>
-                Track and manage all your events in one place
-              </CardDescription>
+              <CardDescription>Track and manage all your events in one place</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm">
@@ -115,9 +116,7 @@ export default function Page() {
             <CardHeader>
               <Users className="h-8 w-8 text-green-600 mb-2" />
               <CardTitle>Review Workflow</CardTitle>
-              <CardDescription>
-                Streamlined approval process with feedback
-              </CardDescription>
+              <CardDescription>Streamlined approval process with feedback</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm">
@@ -140,11 +139,11 @@ export default function Page() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </PageContainer>
 
       {/* Recent Events */}
       {recentEvents && recentEvents.length > 0 && (
-        <div className="px-4 lg:px-6">
+        <PageContainer>
           <Card>
             <CardHeader>
               <CardTitle>Recent Events</CardTitle>
@@ -153,7 +152,10 @@ export default function Page() {
             <CardContent>
               <div className="space-y-4">
                 {recentEvents.slice(0, 5).map((event) => (
-                  <div key={event._id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div
+                    key={event._id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
                     <div className="space-y-1">
                       <p className="font-medium">{event.title}</p>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -164,10 +166,13 @@ export default function Page() {
                     </div>
                     <Badge
                       variant={
-                        event.status === "published" ? "default" :
-                        event.status === "approved" ? "secondary" :
-                        event.status === "submitted" || event.status === "resubmitted" ? "outline" :
-                        "secondary"
+                        event.status === "published"
+                          ? "default"
+                          : event.status === "approved"
+                            ? "secondary"
+                            : event.status === "submitted" || event.status === "resubmitted"
+                              ? "outline"
+                              : "secondary"
                       }
                     >
                       {event.status.replace("_", " ")}
@@ -184,20 +189,18 @@ export default function Page() {
               )}
             </CardContent>
           </Card>
-        </div>
+        </PageContainer>
       )}
 
       {/* MVP Status Card */}
-      <div className="px-4 lg:px-6">
+      <PageContainer>
         <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
               <CardTitle>HTW Event Platform MVP</CardTitle>
             </div>
-            <CardDescription>
-              Phase 1: Host Event Submission - Feature Complete
-            </CardDescription>
+            <CardDescription>Phase 1: Host Event Submission - Feature Complete</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
@@ -234,7 +237,7 @@ export default function Page() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </PageContainer>
     </div>
   );
 }
