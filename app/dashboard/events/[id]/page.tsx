@@ -16,7 +16,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -162,15 +162,19 @@ export default function EventDetailPage() {
   });
 
   // If a draft exists and we're entering edit mode, merge it once
-  if (isEditing && restore && event) {
-    // Apply only once per edit session
-    Object.entries(restore as any).forEach(([k, v]) => {
-      if (v !== undefined) {
-        // @ts-ignore
-        form.setValue(k, v, { shouldDirty: false });
-      }
-    });
-  }
+  const appliedRestoreRef = useRef(false);
+  useEffect(() => {
+    if (isEditing && restore && event && !appliedRestoreRef.current) {
+      Object.entries(restore as any).forEach(([k, v]) => {
+        if (v !== undefined) {
+          // @ts-ignore
+          form.setValue(k, v, { shouldDirty: false });
+        }
+      });
+      appliedRestoreRef.current = true;
+    }
+    if (!isEditing) appliedRestoreRef.current = false;
+  }, [isEditing, restore, event, form]);
 
   if (event === undefined) {
     return <EventDetailLoading />;

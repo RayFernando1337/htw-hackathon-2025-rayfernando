@@ -24,11 +24,11 @@ export function useFormDraft<T = any>({ key, data, enabled = true, debounceMs = 
 
   // Save on data changes with debounce
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || data === undefined) return;
     const payload = JSON.stringify(data ?? {});
     if (payload === lastSaved.current) return;
-    setStatus("saving");
     if (timer.current) clearTimeout(timer.current);
+    setStatus("saving");
     timer.current = setTimeout(async () => {
       try {
         await upsertDraft({ key, data: data ?? {} } as any);
@@ -37,6 +37,7 @@ export function useFormDraft<T = any>({ key, data, enabled = true, debounceMs = 
         setTimeout(() => setStatus("idle"), 1200);
       } catch (e) {
         setStatus("error");
+        setTimeout(() => setStatus("idle"), 1500);
       }
     }, debounceMs);
     return () => {
