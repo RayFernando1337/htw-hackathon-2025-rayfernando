@@ -211,7 +211,7 @@ function detectCollisions(proposedDate: Date, audience: string) {
 
 ## Build Phases
 
-- [Phase 0: Foundation & Role-Based Routing](./phase-0-foundation.md)
+- [Phase 0: Foundation & Role-Based Routing](../completed/phase-0-foundation/phase-0-foundation.md)
 - [Phase 1: Host Event Submission](./phase-1-host-submission.md)
 - [Phase 2: Admin Review & Field-Level Feedback](./phase-2-admin-review.md)
 - [Phase 3: Publishing & Dynamic Checklists](./phase-3-publishing-checklists.md)
