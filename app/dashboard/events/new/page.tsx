@@ -20,7 +20,12 @@ import { Form } from "@/components/ui/form";
 import { PageContainer, PageHeader } from "@/components/ui/page-container";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { EventEditFormData, eventDraftSchema } from "@/lib/validations/event";
+import {
+  EventEditFormData,
+  eventDraftSchema,
+  eventSchema,
+  getFieldErrors,
+} from "@/lib/validations/event";
 
 const FORM_STEPS = [
   { id: "basics", title: "Event Basics", fields: ["title", "shortDescription"] },
@@ -111,6 +116,26 @@ export default function CreateEventPage() {
     }
 
     try {
+      // Pre-validate against full submission schema for clear UI feedback
+      const result = eventSchema.safeParse(data);
+      if (!result.success) {
+        const fieldErrors = getFieldErrors(result.error);
+        Object.entries(fieldErrors).forEach(([name, message]) => {
+          form.setError(name as any, { type: "manual", message });
+        });
+
+        // Navigate to the earliest step that contains an error
+        const firstErrorField = Object.keys(fieldErrors)[0];
+        if (firstErrorField) {
+          const stepIndex = FORM_STEPS.findIndex((s) => s.fields?.includes(firstErrorField));
+          if (stepIndex >= 0) setCurrentStep(stepIndex);
+          form.setFocus(firstErrorField as any);
+        }
+
+        toast.error("Please complete required fields before submitting.");
+        return;
+      }
+
       // Transform the data for backend, removing agreementAccepted and using agreementAcceptedAt
       const { agreementAccepted, ...submitData } = data;
 

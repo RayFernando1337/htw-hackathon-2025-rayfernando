@@ -46,7 +46,12 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { EventEditFormData, eventEditSchema } from "@/lib/validations/event";
+import {
+  EventEditFormData,
+  eventEditSchema,
+  eventSchema,
+  getFieldErrors,
+} from "@/lib/validations/event";
 
 import { AudienceStep, BasicsStep, LogisticsStep } from "@/components/event-form/form-steps";
 import { DashboardSection, PageContainer, PageHeader } from "@/components/ui/page-container";
@@ -186,6 +191,21 @@ export default function EventDetailPage() {
 
   const handleSubmit = async () => {
     try {
+      // Validate current form values against full schema for UX feedback
+      const values = form.getValues();
+      const validation = eventSchema.safeParse(values);
+      if (!validation.success) {
+        const fieldErrors = getFieldErrors(validation.error);
+        Object.entries(fieldErrors).forEach(([name, message]) => {
+          form.setError(name as any, { type: "manual", message });
+        });
+        // Focus first error field
+        const firstError = Object.keys(fieldErrors)[0];
+        if (firstError) form.setFocus(firstError as any);
+        toast.error("Please complete required fields before submitting.");
+        return;
+      }
+
       await submitEvent({ id: eventId });
       toast.success("Event submitted for review!");
     } catch (error: any) {
