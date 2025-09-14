@@ -154,7 +154,7 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
           )}
         />
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between">
           <Button
             type="button"
             variant="outline"
@@ -162,7 +162,7 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
             disabled={isLoading}
             className="w-full sm:w-auto"
           >
-            Previous
+            Back
           </Button>
           <Button
             type="button"
@@ -170,7 +170,7 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
             disabled={isLoading}
             className="w-full sm:w-auto"
           >
-            Next: Audience
+            Next
           </Button>
         </div>
       </CardContent>
@@ -302,7 +302,7 @@ export function AudienceStep({ form, onNext, onPrev, isLoading }: StepProps) {
           )}
         />
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between">
           <Button
             type="button"
             variant="outline"
@@ -310,7 +310,7 @@ export function AudienceStep({ form, onNext, onPrev, isLoading }: StepProps) {
             disabled={isLoading}
             className="w-full sm:w-auto"
           >
-            Previous
+            Back
           </Button>
           <Button
             type="button"
@@ -318,7 +318,7 @@ export function AudienceStep({ form, onNext, onPrev, isLoading }: StepProps) {
             disabled={isLoading}
             className="w-full sm:w-auto"
           >
-            Next: Review
+            Next
           </Button>
         </div>
       </CardContent>
@@ -413,7 +413,7 @@ export function ReviewStep({
           )}
         />
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between">
           <Button
             type="button"
             variant="outline"
@@ -421,14 +421,14 @@ export function ReviewStep({
             disabled={isLoading}
             className="w-full sm:w-auto"
           >
-            Previous
+            Back
           </Button>
           <Button
             type="submit"
             disabled={isLoading || !values.agreementAccepted}
             className="w-full sm:w-auto"
           >
-            {isLoading ? "Submitting..." : "Submit Event for Review"}
+            {isLoading ? "Submitting..." : "Submit"}
           </Button>
         </div>
       </CardContent>
