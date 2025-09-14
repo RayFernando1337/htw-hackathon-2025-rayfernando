@@ -55,50 +55,71 @@ interface StepIndicatorProps {
 
 export function StepIndicator({ steps, currentStep, className }: StepIndicatorProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between",
-        className
-      )}
-    >
-      {steps.map((step, index) => (
-        <div key={step.id} className="flex items-center sm:flex-1">
-          <div className="flex items-center min-w-0">
-            <div
-              className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium shrink-0",
-                index < currentStep
-                  ? "bg-primary text-primary-foreground"
-                  : index === currentStep
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
-              )}
-              aria-current={index === currentStep ? "step" : undefined}
-            >
-              {index < currentStep ? "✓" : index + 1}
+    <div className={cn("space-y-4 sm:space-y-0", className)}>
+      {/* Mobile: Current Step Highlight */}
+      <div className="sm:hidden bg-muted/30 rounded-lg p-4 border">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
+              {currentStep + 1}
             </div>
-            <div className="ml-3 min-w-0">
-              <p
-                className={cn(
-                  "text-sm font-medium truncate sm:whitespace-normal sm:break-words",
-                  index <= currentStep ? "text-foreground" : "text-muted-foreground"
-                )}
-                title={step.title}
-              >
-                {step.title}
+            <div>
+              <h3 className="font-semibold">{steps[currentStep].title}</h3>
+              <p className="text-sm text-muted-foreground">
+                Step {currentStep + 1} of {steps.length}
               </p>
             </div>
           </div>
-          {index < steps.length - 1 && (
-            <div
-              className={cn(
-                "hidden sm:flex flex-1 h-px mx-4",
-                index < currentStep ? "bg-primary" : "bg-border"
-              )}
-            />
-          )}
+          <div className="text-right">
+            <div className="text-sm font-medium text-muted-foreground">Progress</div>
+            <div className="text-lg font-bold">
+              {Math.round(((currentStep + 1) / steps.length) * 100)}%
+            </div>
+          </div>
         </div>
-      ))}
+      </div>
+
+      {/* Desktop: Full Step Indicator */}
+      <div className="hidden sm:flex sm:items-center sm:justify-between">
+        {steps.map((step, index) => (
+          <div key={step.id} className="flex items-center flex-1">
+            <div className="flex items-center min-w-0">
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium shrink-0",
+                  index < currentStep
+                    ? "bg-primary text-primary-foreground"
+                    : index === currentStep
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                )}
+                aria-current={index === currentStep ? "step" : undefined}
+              >
+                {index < currentStep ? "✓" : index + 1}
+              </div>
+              <div className="ml-3 min-w-0">
+                <p
+                  className={cn(
+                    "text-sm font-medium whitespace-normal break-words",
+                    index <= currentStep ? "text-foreground" : "text-muted-foreground"
+                  )}
+                  title={step.title}
+                >
+                  {step.title}
+                </p>
+              </div>
+            </div>
+            {index < steps.length - 1 && (
+              <div
+                className={cn(
+                  "flex flex-1 h-px mx-4",
+                  index < currentStep ? "bg-primary" : "bg-border"
+                )}
+              />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

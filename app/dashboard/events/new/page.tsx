@@ -144,50 +144,64 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6">
-      <div className="flex flex-col gap-2 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold">Create New Event</h1>
-        <AutoSaveIndicator status={autoSaveStatus} />
+    <div className="min-h-screen bg-background">
+      <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-6">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">Create New Event</h1>
+              <p className="text-sm text-muted-foreground mt-1 sm:hidden">
+                Step {currentStep + 1} of {FORM_STEPS.length}: {FORM_STEPS[currentStep].title}
+              </p>
+            </div>
+            <AutoSaveIndicator status={autoSaveStatus} />
+          </div>
+        </div>
+
+        {/* Step Progress */}
+        <div className="mb-6 sm:mb-8">
+          <StepIndicator steps={FORM_STEPS} currentStep={currentStep} />
+        </div>
+
+        {/* Form Content */}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="pb-6">
+            {currentStep === 0 && (
+              <BasicsStep form={form} onNext={nextStep} isLoading={autoSaveStatus === "saving"} />
+            )}
+
+            {currentStep === 1 && (
+              <LogisticsStep
+                form={form}
+                onNext={nextStep}
+                onPrev={prevStep}
+                isLoading={autoSaveStatus === "saving"}
+              />
+            )}
+
+            {currentStep === 2 && (
+              <AudienceStep
+                form={form}
+                onNext={nextStep}
+                onPrev={prevStep}
+                isLoading={autoSaveStatus === "saving"}
+              />
+            )}
+
+            {currentStep === 3 && (
+              <ReviewStep
+                form={form}
+                onPrev={prevStep}
+                onSubmit={async () => {
+                  await form.handleSubmit(onSubmit)();
+                }}
+                isLoading={form.formState.isSubmitting}
+              />
+            )}
+          </form>
+        </Form>
       </div>
-
-      <StepIndicator steps={FORM_STEPS} currentStep={currentStep} />
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {currentStep === 0 && (
-            <BasicsStep form={form} onNext={nextStep} isLoading={autoSaveStatus === "saving"} />
-          )}
-
-          {currentStep === 1 && (
-            <LogisticsStep
-              form={form}
-              onNext={nextStep}
-              onPrev={prevStep}
-              isLoading={autoSaveStatus === "saving"}
-            />
-          )}
-
-          {currentStep === 2 && (
-            <AudienceStep
-              form={form}
-              onNext={nextStep}
-              onPrev={prevStep}
-              isLoading={autoSaveStatus === "saving"}
-            />
-          )}
-
-          {currentStep === 3 && (
-            <ReviewStep
-              form={form}
-              onPrev={prevStep}
-              onSubmit={async () => {
-                await form.handleSubmit(onSubmit)();
-              }}
-              isLoading={form.formState.isSubmitting}
-            />
-          )}
-        </form>
-      </Form>
     </div>
   );
 }
