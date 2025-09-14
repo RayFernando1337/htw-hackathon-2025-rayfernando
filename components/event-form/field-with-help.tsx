@@ -236,14 +236,18 @@ export function AutoSaveIndicator({ status, className }: AutoSaveIndicatorProps)
 
   const config = statusConfig[status];
 
-  if (!config.text) return null;
-
+  // Always reserve space to prevent layout shifts on mobile.
   return (
-    <div className={cn("flex items-center text-xs", config.color, className)}>
+    <div
+      className={cn("flex items-center text-xs h-4", config.color, className)}
+      aria-live="polite"
+      aria-atomic="true"
+    >
       {status === "saving" && (
         <div className="w-3 h-3 mr-1 border border-current border-t-transparent rounded-full animate-spin" />
       )}
-      {config.text}
+      {/* Keep text invisible when idle to maintain dimensions */}
+      <span className={cn(status === "idle" && "opacity-0")}>{config.text || "Saved"}</span>
     </div>
   );
 }

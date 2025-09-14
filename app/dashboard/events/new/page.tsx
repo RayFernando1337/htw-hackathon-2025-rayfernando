@@ -148,14 +148,17 @@ export default function CreateEventPage() {
       <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-6">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">Create New Event</h1>
-              <p className="text-sm text-muted-foreground mt-1 sm:hidden">
-                Step {currentStep + 1} of {FORM_STEPS.length}: {FORM_STEPS[currentStep].title}
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-sm text-muted-foreground sm:hidden">
+                  Step {currentStep + 1} of {FORM_STEPS.length}: {FORM_STEPS[currentStep].title}
+                </p>
+                {/* Inline autosave indicator in header row to avoid layout shift */}
+                <AutoSaveIndicator status={autoSaveStatus} className="ml-auto" />
+              </div>
             </div>
-            <AutoSaveIndicator status={autoSaveStatus} />
           </div>
         </div>
 
