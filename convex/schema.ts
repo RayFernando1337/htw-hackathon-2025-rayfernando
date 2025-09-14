@@ -109,6 +109,18 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_thread", ["threadId"]),
 
+  // Autosaved feedback drafts per admin x event field
+  feedbackDrafts: defineTable({
+    eventId: v.id("events"),
+    fieldPath: v.string(),
+    authorId: v.id("users"),
+    reason: v.optional(v.string()),
+    message: v.string(),
+    updatedAt: v.number(),
+  })
+    .index("by_event_field_author", ["eventId", "fieldPath", "authorId"])
+    .index("by_author", ["authorId"]),
+
   // Audit log for state changes
   auditLog: defineTable({
     eventId: v.id("events"),

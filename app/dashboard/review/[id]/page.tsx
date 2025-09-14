@@ -140,6 +140,7 @@ export default function ReviewEventPage() {
         <FeedbackDrawer
         open={!!selectedField}
         onClose={() => setSelectedField(null)}
+        eventId={event._id}
         fieldKey={selectedField}
         title={selectedTitle}
         thread={selectedThread}

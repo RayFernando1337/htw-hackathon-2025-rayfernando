@@ -56,23 +56,32 @@ export const createThread = mutation({
     });
 
     await logAction(ctx, {
-      eventId: args.eventId,
-      actorId: user._id,
-      action: "feedback_added",
-      metadata: { fieldPath: args.fieldPath, reason: args.reason },
+    eventId: args.eventId,
+    actorId: user._id,
+    action: "feedback_added",
+    metadata: { fieldPath: args.fieldPath, reason: args.reason },
     });
 
     // Create notification for host
     const event = await ctx.db.get(args.eventId);
     if (event) {
-      await ctx.db.insert("notifications", {
-        userId: event.hostId,
-        type: "feedback",
-        eventId: args.eventId,
-        message: `Feedback added on ${args.fieldPath}`,
-        createdAt: Date.now(),
-      });
+    await ctx.db.insert("notifications", {
+    userId: event.hostId,
+      type: "feedback",
+    eventId: args.eventId,
+    message: `Feedback added on ${args.fieldPath}`,
+    createdAt: Date.now(),
+    });
     }
+
+    // Clear any draft for this field by this admin
+      const existingDraft = await ctx.db
+      .query("feedbackDrafts")
+      .withIndex("by_event_field_author", (q: any) =>
+        q.eq("eventId", args.eventId).eq("fieldPath", args.fieldPath).eq("authorId", user._id)
+      )
+      .unique();
+    if (existingDraft) await ctx.db.delete(existingDraft._id);
 
     return threadId;
   },
