@@ -1,17 +1,16 @@
 "use client";
 
-import * as React from "react";
-import { UseFormReturn } from "react-hook-form";
-import { FieldWithHelp, MultiSelect, DatePicker } from "./field-with-help";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EventFormData, EVENT_FORMATS } from "@/lib/validations/event";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { EVENT_FORMATS, EventFormData } from "@/lib/validations/event";
+import { UseFormReturn } from "react-hook-form";
+import { DatePicker, FieldWithHelp, MultiSelect, MultiSelectOption } from "./field-with-help";
 
 interface StepProps {
   form: UseFormReturn<EventFormData>;
@@ -47,10 +46,7 @@ export function BasicsStep({ form, onNext, isLoading }: StepProps) {
               error={error?.message}
               required
             >
-              <Input 
-                placeholder="e.g., AI Founders Mixer: Building the Future"
-                {...field}
-              />
+              <Input placeholder="e.g., AI Founders Mixer: Building the Future" {...field} />
             </FieldWithHelp>
           )}
         />
@@ -65,7 +61,7 @@ export function BasicsStep({ form, onNext, isLoading }: StepProps) {
               error={error?.message}
               required
             >
-              <Textarea 
+              <Textarea
                 placeholder="Join us for an evening of networking with AI startup founders. We'll discuss fundraising strategies, product development, and the latest trends in artificial intelligence..."
                 rows={4}
                 {...field}
@@ -75,11 +71,7 @@ export function BasicsStep({ form, onNext, isLoading }: StepProps) {
         />
 
         <div className="flex justify-end">
-          <Button 
-            type="button" 
-            onClick={handleNext}
-            disabled={isLoading}
-          >
+          <Button type="button" onClick={handleNext} disabled={isLoading}>
             Next: Logistics
           </Button>
         </div>
@@ -115,11 +107,7 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
               error={error?.message}
               required
             >
-              <DatePicker 
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="Select date"
-              />
+              <DatePicker value={field.value} onChange={field.onChange} placeholder="Select date" />
             </FieldWithHelp>
           )}
         />
@@ -134,10 +122,7 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
               error={error?.message}
               required
             >
-              <Input 
-                placeholder="e.g., Acme Corp Office, 123 Main St, SF"
-                {...field}
-              />
+              <Input placeholder="e.g., Acme Corp Office, 123 Main St, SF" {...field} />
             </FieldWithHelp>
           )}
         />
@@ -152,7 +137,7 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
               error={error?.message}
               required
             >
-              <Input 
+              <Input
                 type="number"
                 min="10"
                 max="1000"
@@ -165,19 +150,10 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
         />
 
         <div className="flex justify-between">
-          <Button 
-            type="button" 
-            variant="outline"
-            onClick={onPrev}
-            disabled={isLoading}
-          >
+          <Button type="button" variant="outline" onClick={onPrev} disabled={isLoading}>
             Previous
           </Button>
-          <Button 
-            type="button" 
-            onClick={handleNext}
-            disabled={isLoading}
-          >
+          <Button type="button" onClick={handleNext} disabled={isLoading}>
             Next: Audience
           </Button>
         </div>
@@ -214,7 +190,7 @@ export function AudienceStep({ form, onNext, onPrev, isLoading }: StepProps) {
               required
             >
               <MultiSelect
-                options={EVENT_FORMATS}
+                options={EVENT_FORMATS as unknown as MultiSelectOption[]}
                 value={field.value || []}
                 onChange={field.onChange}
                 maxSelections={3}
@@ -260,7 +236,7 @@ export function AudienceStep({ form, onNext, onPrev, isLoading }: StepProps) {
               error={error?.message}
               required
             >
-              <Textarea 
+              <Textarea
                 placeholder="e.g., AI startup founders and CTOs building B2B products, particularly those in Series A-B stage looking to scale their teams..."
                 rows={3}
                 {...field}
@@ -305,28 +281,16 @@ export function AudienceStep({ form, onNext, onPrev, isLoading }: StepProps) {
               help="Share a Google Doc or similar with your event planning details, agenda, or speaker information."
               error={error?.message}
             >
-              <Input 
-                placeholder="https://docs.google.com/..."
-                {...field}
-              />
+              <Input placeholder="https://docs.google.com/..." {...field} />
             </FieldWithHelp>
           )}
         />
 
         <div className="flex justify-between">
-          <Button 
-            type="button" 
-            variant="outline"
-            onClick={onPrev}
-            disabled={isLoading}
-          >
+          <Button type="button" variant="outline" onClick={onPrev} disabled={isLoading}>
             Previous
           </Button>
-          <Button 
-            type="button" 
-            onClick={handleNext}
-            disabled={isLoading}
-          >
+          <Button type="button" onClick={handleNext} disabled={isLoading}>
             Next: Review
           </Button>
         </div>
@@ -336,7 +300,12 @@ export function AudienceStep({ form, onNext, onPrev, isLoading }: StepProps) {
 }
 
 // Step 4: Review & Submit
-export function ReviewStep({ form, onPrev, isLoading, onSubmit }: StepProps & { onSubmit: () => Promise<void> }) {
+export function ReviewStep({
+  form,
+  onPrev,
+  isLoading,
+  onSubmit,
+}: StepProps & { onSubmit: () => Promise<void> }) {
   const { control, watch } = form;
   const values = watch();
 
@@ -350,14 +319,41 @@ export function ReviewStep({ form, onPrev, isLoading, onSubmit }: StepProps & { 
         <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
           <h3 className="font-semibold">Event Summary</h3>
           <div className="grid gap-2 text-sm">
-            <div><strong>Title:</strong> {values.title}</div>
-            <div><strong>Date:</strong> {values.eventDate ? new Date(values.eventDate).toLocaleDateString() : "Not set"}</div>
-            <div><strong>Venue:</strong> {values.venue}</div>
-            <div><strong>Capacity:</strong> {values.capacity} people</div>
-            <div><strong>Format:</strong> {values.formats?.join(", ")}</div>
-            <div><strong>Type:</strong> {values.isPublic ? "Public" : "Private"}</div>
-            <div><strong>Target Audience:</strong> {values.targetAudience}</div>
-            {values.planningDocUrl && <div><strong>Planning Doc:</strong> <a href={values.planningDocUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Document</a></div>}
+            <div>
+              <strong>Title:</strong> {values.title}
+            </div>
+            <div>
+              <strong>Date:</strong>{" "}
+              {values.eventDate ? new Date(values.eventDate).toLocaleDateString() : "Not set"}
+            </div>
+            <div>
+              <strong>Venue:</strong> {values.venue}
+            </div>
+            <div>
+              <strong>Capacity:</strong> {values.capacity} people
+            </div>
+            <div>
+              <strong>Format:</strong> {values.formats?.join(", ")}
+            </div>
+            <div>
+              <strong>Type:</strong> {values.isPublic ? "Public" : "Private"}
+            </div>
+            <div>
+              <strong>Target Audience:</strong> {values.targetAudience}
+            </div>
+            {values.planningDocUrl && (
+              <div>
+                <strong>Planning Doc:</strong>{" "}
+                <a
+                  href={values.planningDocUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  View Document
+                </a>
+              </div>
+            )}
           </div>
         </div>
 
@@ -366,23 +362,21 @@ export function ReviewStep({ form, onPrev, isLoading, onSubmit }: StepProps & { 
           control={control}
           name="agreementAccepted"
           render={({ field, fieldState: { error } }) => (
-            <FieldWithHelp
-              label=""
-              error={error?.message}
-              required
-            >
+            <FieldWithHelp label="" error={error?.message} required>
               <div className="flex items-start space-x-2">
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 <div className="grid gap-1.5 leading-none">
                   <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     I accept the HTW Host Agreement *
                   </label>
                   <p className="text-xs text-muted-foreground">
-                    By submitting this event, I agree to follow HTW guidelines, provide a professional experience, and maintain the community standards. 
-                    <a href="/host-agreement" target="_blank" className="text-primary hover:underline ml-1">
+                    By submitting this event, I agree to follow HTW guidelines, provide a
+                    professional experience, and maintain the community standards.
+                    <a
+                      href="/host-agreement"
+                      target="_blank"
+                      className="text-primary hover:underline ml-1"
+                    >
                       View full agreement
                     </a>
                   </p>
@@ -393,18 +387,10 @@ export function ReviewStep({ form, onPrev, isLoading, onSubmit }: StepProps & { 
         />
 
         <div className="flex justify-between">
-          <Button 
-            type="button" 
-            variant="outline"
-            onClick={onPrev}
-            disabled={isLoading}
-          >
+          <Button type="button" variant="outline" onClick={onPrev} disabled={isLoading}>
             Previous
           </Button>
-          <Button 
-            type="submit"
-            disabled={isLoading || !values.agreementAccepted}
-          >
+          <Button type="submit" disabled={isLoading || !values.agreementAccepted}>
             {isLoading ? "Submitting..." : "Submit Event for Review"}
           </Button>
         </div>

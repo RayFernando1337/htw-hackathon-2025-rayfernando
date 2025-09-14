@@ -97,7 +97,7 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
 }
 
 // Multi-select component for event formats
-interface MultiSelectOption {
+export interface MultiSelectOption {
   value: string;
   label: string;
 }
