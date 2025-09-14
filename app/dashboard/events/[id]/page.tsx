@@ -170,10 +170,12 @@ export default function EventDetailPage() {
 
   const handleSave = async (data: EventFormData) => {
     try {
+      // Do not send agreementAccepted to backend; convert to agreementAcceptedAt
+      const { agreementAccepted, ...rest } = data;
       await updateDraft({
         id: eventId,
-        ...data,
-        agreementAcceptedAt: data.agreementAccepted ? Date.now() : undefined,
+        ...rest,
+        agreementAcceptedAt: agreementAccepted ? Date.now() : undefined,
       });
       toast.success("Event updated successfully!");
       setIsEditing(false);
