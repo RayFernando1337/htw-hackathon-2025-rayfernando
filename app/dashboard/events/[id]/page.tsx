@@ -35,6 +35,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +43,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Steps } from "@/components/ui/steps";
@@ -134,6 +136,10 @@ export default function EventDetailPage() {
   const updateDraft = useMutation(api.events.updateDraft);
   const submitEvent = useMutation(api.events.submitEvent);
   const deleteEvent = useMutation(api.events.deleteEvent);
+  const updateLumaUrl = useMutation(api.events.updateLumaUrl);
+  const generateChecklist = useMutation(api.events.generateChecklistForEvent);
+  const toggleChecklistItem = useMutation(api.events.toggleChecklistItem);
+  const conflicts = useQuery(api.events.getVenueConflictsById, { id: eventId });
   const threads = useQuery(api.feedback.getThreadsByEvent, { eventId });
   const addComment = useMutation(api.feedback.addComment);
   const [pendingReply, setPendingReply] = useState<Record<string, boolean>>({});
@@ -200,6 +206,12 @@ export default function EventDetailPage() {
     }
     if (!isEditing) appliedRestoreRef.current = false;
   }, [isEditing, restore, event, form]);
+
+  // Luma URL local input state synced to server value
+  const [lumaInput, setLumaInput] = useState("");
+  useEffect(() => {
+    setLumaInput(event?.lumaUrl ?? "");
+  }, [event?.lumaUrl]);
 
   // Keep edit mode consistent with server state even during loading
   const isEditable = event?.status === "draft" || event?.status === "changes_requested";
@@ -412,6 +424,28 @@ export default function EventDetailPage() {
         <StatusIcon className="h-4 w-4" />
         <AlertDescription>{config.description}</AlertDescription>
       </Alert>
+
+      {/* Venue Conflicts (server-derived) */}
+      {conflicts && conflicts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Potential Conflicts</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              We found other events at the same venue and date:
+            </p>
+            <ul className="list-disc pl-5 space-y-1">
+              {conflicts.map((c: any) => (
+                <li key={c._id} className="text-sm">
+                  <span className="font-medium">{c.title}</span> • {c.venue} • {c.eventDate} •{" "}
+                  {c.status}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Feedback (if any) */}
       {openThreads && openThreads.length > 0 && (
@@ -665,6 +699,100 @@ export default function EventDetailPage() {
               </CardContent>
             </Card>
           )}
+        </DashboardSection>
+      )}
+
+      {/* Post-approval workflow: Luma URL + Checklist */}
+      {(event.status === "approved" || event.status === "published") && (
+        <DashboardSection>
+          {/* Luma URL */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Lu.ma Integration</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-2">
+                <div className="text-sm text-muted-foreground">Add your Lu.ma event URL</div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://lu.ma/your-event"
+                    value={lumaInput}
+                    onChange={(e) => setLumaInput(e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await updateLumaUrl({ id: eventId, lumaUrl: lumaInput });
+                        toast.success("Lu.ma URL saved");
+                      } catch (err: any) {
+                        toast.error(err.message || "Failed to save Lu.ma URL");
+                      }
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Checklist */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Publishing Checklist</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {!event.checklist || event.checklist.length === 0 ? (
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">No checklist yet.</div>
+                  <Button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await generateChecklist({ id: eventId });
+                        toast.success("Checklist generated");
+                      } catch (err: any) {
+                        toast.error(err.message || "Failed to generate checklist");
+                      }
+                    }}
+                  >
+                    Generate Checklist
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {event.checklist.map((item: any) => (
+                    <label key={item.id} className="flex items-start gap-3">
+                      <Checkbox
+                        checked={!!item.completed}
+                        onCheckedChange={async (checked) => {
+                          try {
+                            await toggleChecklistItem({
+                              id: eventId,
+                              itemId: item.id,
+                              completed: Boolean(checked),
+                            });
+                          } catch (err: any) {
+                            toast.error(err.message || "Failed to update item");
+                          }
+                        }}
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm">{item.task}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {item.section}
+                          {item.dueDate
+                            ? ` • Due ${new Date(item.dueDate).toLocaleDateString()}`
+                            : ""}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </DashboardSection>
       )}
     </PageContainer>

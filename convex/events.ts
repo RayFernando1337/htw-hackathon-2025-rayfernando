@@ -674,3 +674,280 @@ export const approve = mutation({
     });
   },
 });
+
+// Update Lu.ma URL for an event (host allowed only after approval; admins anytime)
+export const updateLumaUrl = mutation({
+  args: { id: v.id("events"), lumaUrl: v.string() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const event = await ctx.db.get(args.id);
+    if (!event) throw new Error("Event not found");
+
+    const isAdmin = user.role === "admin";
+    const isOwner = event.hostId === user._id;
+    if (!isAdmin) {
+      if (!isOwner) throw new Error("Unauthorized");
+      if (!(event.status === "approved" || event.status === "published")) {
+        throw new Error("Lu.ma URL can only be set after approval");
+      }
+    }
+
+    // Basic guard to avoid obviously wrong values
+    const url = args.lumaUrl.trim();
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      throw new Error("Please provide a valid URL (http/https)");
+    }
+
+    await ctx.db.patch(args.id, { lumaUrl: url });
+    return null;
+  },
+});
+
+// Mark whether the event is on calendar (admin only)
+export const markOnCalendar = mutation({
+  args: { id: v.id("events"), onCalendar: v.boolean() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const admin = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!admin || admin.role !== "admin") throw new Error("Unauthorized");
+
+    const event = await ctx.db.get(args.id);
+    if (!event) throw new Error("Event not found");
+
+    await ctx.db.patch(args.id, { onCalendar: args.onCalendar });
+    return null;
+  },
+});
+
+// Admin publishes an event (requires approved status and preferably a Luma URL)
+export const publish = mutation({
+  args: { id: v.id("events") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const admin = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!admin || admin.role !== "admin") throw new Error("Unauthorized");
+
+    const event = await ctx.db.get(args.id);
+    if (!event) throw new Error("Event not found");
+    if (event.status !== "approved") {
+      throw new Error("Only approved events can be published");
+    }
+    if (!event.lumaUrl) {
+      throw new Error("Please add a Lu.ma URL before publishing");
+    }
+
+    await ctx.db.patch(args.id, { status: "published" });
+
+    await ctx.db.insert("auditLog", {
+      eventId: args.id,
+      actorId: admin._id,
+      action: "status_change",
+      fromValue: event.status,
+      toValue: "published",
+      metadata: {},
+      timestamp: Date.now(),
+    });
+
+    await ctx.db.insert("notifications", {
+      userId: event.hostId,
+      type: "status_change",
+      eventId: args.id,
+      message: `Your event is now published`,
+      createdAt: Date.now(),
+    });
+
+    return null;
+  },
+});
+
+// Basic checklist templates embedded for server-side generation
+const CHECKLIST_TEMPLATES: Record<
+  string,
+  {
+    sections: Record<string, Array<{ id: string; task: string; daysBeforeEvent: number }>>;
+  }
+> = {
+  general: {
+    sections: {
+      planning: [
+        { id: "p1", task: "Finalize agenda", daysBeforeEvent: 14 },
+        { id: "p2", task: "Confirm venue details", daysBeforeEvent: 10 },
+      ],
+      marketing: [
+        { id: "m1", task: "Post event announcement", daysBeforeEvent: 12 },
+        { id: "m2", task: "Share on social channels", daysBeforeEvent: 7 },
+      ],
+      logistics: [
+        { id: "l1", task: "Confirm A/V setup", daysBeforeEvent: 3 },
+        { id: "l2", task: "Prepare signage", daysBeforeEvent: 1 },
+      ],
+    },
+  },
+};
+
+function generateChecklist(template: string, eventDateIso?: string) {
+  const config = CHECKLIST_TEMPLATES[template] ?? CHECKLIST_TEMPLATES.general;
+  const baseDate = eventDateIso ? new Date(eventDateIso) : undefined;
+  const items: Array<{
+    id: string;
+    task: string;
+    completed: boolean;
+    dueDate?: string;
+    section: string;
+  }> = [];
+  for (const [section, tasks] of Object.entries(config.sections)) {
+    for (const t of tasks) {
+      let dueDate: string | undefined = undefined;
+      if (baseDate && !Number.isNaN(baseDate.getTime())) {
+        const d = new Date(baseDate);
+        d.setDate(d.getDate() - t.daysBeforeEvent);
+        dueDate = d.toISOString();
+      }
+      items.push({ id: `${template}-${t.id}`, task: t.task, completed: false, dueDate, section });
+    }
+  }
+  items.sort((a, b) => {
+    const ta = a.dueDate ? new Date(a.dueDate).getTime() : Number.MAX_SAFE_INTEGER;
+    const tb = b.dueDate ? new Date(b.dueDate).getTime() : Number.MAX_SAFE_INTEGER;
+    return ta - tb;
+  });
+  return items;
+}
+
+// Generate and save checklist items for an event (owner or admin)
+export const generateChecklistForEvent = mutation({
+  args: { id: v.id("events") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const ev = await ctx.db.get(args.id);
+    if (!ev) throw new Error("Event not found");
+    const isOwner = ev.hostId === user._id;
+    const isAdmin = user.role === "admin";
+    if (!(isOwner || isAdmin)) throw new Error("Unauthorized");
+
+    const normalized = normalizeEvent(ev);
+    const checklist = generateChecklist(normalized.checklistTemplate, normalized.eventDate);
+    await ctx.db.patch(args.id, { checklist });
+    return null;
+  },
+});
+
+// Toggle a checklist item's completion state (owner or admin)
+export const toggleChecklistItem = mutation({
+  args: { id: v.id("events"), itemId: v.string(), completed: v.optional(v.boolean()) },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const ev = await ctx.db.get(args.id);
+    if (!ev) throw new Error("Event not found");
+    const isOwner = ev.hostId === user._id;
+    const isAdmin = user.role === "admin";
+    if (!(isOwner || isAdmin)) throw new Error("Unauthorized");
+
+    const normalized = normalizeEvent(ev);
+    const updated = normalized.checklist.map((it: any) =>
+      it.id === args.itemId ? { ...it, completed: args.completed ?? !it.completed } : it
+    );
+    await ctx.db.patch(args.id, { checklist: updated });
+    return null;
+  },
+});
+
+// Derive venue conflicts for an event by id (simple same-date & same-venue match)
+export const getVenueConflictsById = query({
+  args: { id: v.id("events") },
+  returns: v.array(
+    v.object({
+      _id: v.id("events"),
+      title: v.string(),
+      eventDate: v.string(),
+      venue: v.string(),
+      status: v.union(
+        v.literal("draft"),
+        v.literal("submitted"),
+        v.literal("changes_requested"),
+        v.literal("resubmitted"),
+        v.literal("approved"),
+        v.literal("published")
+      ),
+    })
+  ),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!user) return [];
+
+    const ev = await ctx.db.get(args.id);
+    if (!ev) return [];
+
+    // Owners can see conflicts for their own event; admins can see any
+    if (user.role !== "admin" && ev.hostId !== user._id) return [];
+
+    const normalized = normalizeEvent(ev);
+    if (!normalized.eventDate || !normalized.venue) return [];
+
+    // Query by date using index, then filter by venue and exclude self
+    const sameDay = await ctx.db
+      .query("events")
+      .withIndex("by_eventDate", (q) => q.eq("eventDate", normalized.eventDate))
+      .collect();
+
+    const conflicts = sameDay
+      .filter((e) => e._id !== ev._id && normalizeEvent(e).venue === normalized.venue)
+      .map((e) => {
+        const n = normalizeEvent(e);
+        return {
+          _id: n._id,
+          title: n.title,
+          eventDate: n.eventDate,
+          venue: n.venue,
+          status: n.status,
+        };
+      });
+
+    return conflicts;
+  },
+});
