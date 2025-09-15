@@ -64,11 +64,16 @@ export function BasicsStep({ form, onNext, isLoading }: StepProps) {
               required
               right={<FeedbackBadge fieldKey="shortDescription" />}
             >
-              <Textarea
-                placeholder="Join us for an evening of networking with AI startup founders. We'll discuss fundraising strategies, product development, and the latest trends in artificial intelligence..."
-                rows={4}
-                {...field}
-              />
+              <div className="space-y-1">
+                <Textarea
+                  placeholder="Join us for an evening of networking with AI startup founders. We'll discuss fundraising strategies, product development, and the latest trends in artificial intelligence..."
+                  rows={4}
+                  {...field}
+                />
+                <div className="text-xs text-muted-foreground text-right">
+                  {(field.value?.length ?? 0)}/500 • min 50
+                </div>
+              </div>
             </FieldWithHelp>
           )}
         />

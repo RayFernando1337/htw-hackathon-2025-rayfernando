@@ -113,17 +113,18 @@ export const submitEvent = mutation({
       throw new Error("Unauthorized - you can only submit your own events");
     }
 
-    // Validate all required fields
-    if (!event.title || !event.eventDate || !event.venue || !event.targetAudience) {
-      throw new Error("Please complete all required fields before submitting");
-    }
+    // Validate all required fields — return field-specific guidance
+    const missing: string[] = [];
+    if (!event.title) missing.push("Event Title");
+    if (!event.shortDescription || event.shortDescription.trim().length < 50) missing.push("Short Description (min 50 chars)");
+       if (!event.eventDate) missing.push("Event Date");
+    if (!event.venue) missing.push("Venue");
+    if (!event.targetAudience) missing.push("Target Audience");
+    if (!event.formats || event.formats.length === 0) missing.push("Event Format (select at least one)");
+       if (!event.agreementAcceptedAt) missing.push("Host Agreement");
 
-    if (event.formats.length === 0) {
-      throw new Error("Please select at least one event format");
-    }
-
-    if (!event.agreementAcceptedAt) {
-      throw new Error("Please accept the host agreement before submitting");
+    if (missing.length > 0) {
+      throw new Error(`Please complete the following before submitting: ${missing.join(", ")}`);
     }
 
     // State machine validation

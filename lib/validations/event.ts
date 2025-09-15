@@ -9,8 +9,9 @@ export const eventSchema = z.object({
 
   shortDescription: z
     .string()
+    .trim()
     .min(50, "Description must be at least 50 characters")
-    .max(500, "Description must be under 500 characters"),
+    .max(1500, "Description must be under 1500 characters"),
 
   eventDate: z
     .string()
@@ -58,7 +59,7 @@ export const eventSchema = z.object({
 // Partial schema for draft saving (all fields optional except basic info)
 export const eventDraftSchema = z.object({
   title: z.string().max(100, "Title must be under 100 characters").optional(),
-  shortDescription: z.string().max(500, "Description must be under 500 characters").optional(),
+  shortDescription: z.string().max(1500, "Description must be under 1500 characters").optional(),
   eventDate: z.string().optional(),
   venue: z.string().max(200, "Venue name must be under 200 characters").optional(),
   capacity: z.number().min(10).max(1000).optional(),
@@ -137,6 +138,21 @@ export function validateStep(step: number, data: Partial<EventFormData>) {
       return { success: false, error: { issues: [{ message: "Invalid step" }] } };
   }
 }
+
+// Field labels for user-friendly error summaries
+export const FIELD_LABELS: Record<string, string> = {
+  title: "Event Title",
+  shortDescription: "Short Description",
+  eventDate: "Event Date",
+  venue: "Venue",
+  capacity: "Target Capacity",
+  formats: "Event Format",
+  isPublic: "Event Type",
+  targetAudience: "Target Audience",
+  hasHostedBefore: "Hosting Experience",
+  planningDocUrl: "Planning Document",
+  agreementAccepted: "Host Agreement",
+};
 
 // Helper function to get field errors for form display
 export function getFieldErrors(error: z.ZodError) {

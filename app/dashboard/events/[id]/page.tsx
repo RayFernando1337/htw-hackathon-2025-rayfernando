@@ -51,6 +51,7 @@ import {
   eventEditSchema,
   eventSchema,
   getFieldErrors,
+  FIELD_LABELS,
 } from "@/lib/validations/event";
 
 import { AudienceStep, BasicsStep, LogisticsStep } from "@/components/event-form/form-steps";
@@ -132,6 +133,7 @@ export default function EventDetailPage() {
   const deleteEvent = useMutation(api.events.deleteEvent);
   const threads = useQuery(api.feedback.getThreadsByEvent, { eventId } as any);
   const addComment = useMutation(api.feedback.addComment);
+  const [pendingReply, setPendingReply] = useState<Record<string, boolean>>({});
 
   const form = useForm<EventEditFormData>({
     resolver: zodResolver(eventEditSchema),
@@ -230,7 +232,10 @@ export default function EventDetailPage() {
         // Focus first error field
         const firstError = Object.keys(fieldErrors)[0];
         if (firstError) form.setFocus(firstError as any);
-        toast.error("Please complete required fields before submitting.");
+        const fieldsList = Object.keys(fieldErrors)
+          .map((k) => `• ${FIELD_LABELS[k] || k}: ${fieldErrors[k]}`)
+          .join("\n");
+        toast.error(`Please fix the following before submitting:\n${fieldsList}`);
         return;
       }
 
@@ -390,25 +395,37 @@ export default function EventDetailPage() {
                       type="text"
                       placeholder="Reply to feedback..."
                       className="flex-1 h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                      disabled={!!pendingReply[t._id]}
                       onKeyDown={async (e) => {
                         const target = e.target as HTMLInputElement;
-                        if (e.key === "Enter" && target.value.trim()) {
-                          await addComment({ threadId: t._id, message: target.value.trim() } as any);
-                          target.value = "";
+                        if (e.key === "Enter" && target.value.trim() && !pendingReply[t._id]) {
+                          try {
+                            setPendingReply((s) => ({ ...s, [t._id]: true }));
+                            await addComment({ threadId: t._id, message: target.value.trim() } as any);
+                            target.value = "";
+                          } finally {
+                            setPendingReply((s) => ({ ...s, [t._id]: false }));
+                          }
                         }
                       }}
                     />
                     <Button
                       type="button"
+                      disabled={!!pendingReply[t._id]}
                       onClick={async (e) => {
                         const input = (e.currentTarget.previousSibling as HTMLInputElement);
-                        if (input && input.value.trim()) {
-                          await addComment({ threadId: t._id, message: input.value.trim() } as any);
-                          input.value = "";
+                        if (input && input.value.trim() && !pendingReply[t._id]) {
+                          try {
+                            setPendingReply((s) => ({ ...s, [t._id]: true }));
+                            await addComment({ threadId: t._id, message: input.value.trim() } as any);
+                            input.value = "";
+                          } finally {
+                            setPendingReply((s) => ({ ...s, [t._id]: false }));
+                          }
                         }
                       }}
                     >
-                      Reply
+                      {pendingReply[t._id] ? "Sending..." : "Reply"}
                     </Button>
                   </div>
                 </div>
