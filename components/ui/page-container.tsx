@@ -25,7 +25,13 @@ export function PageContainer({
   maxWidth?: MaxWidth;
 }) {
   return (
-    <div className={cn("w-full mx-auto px-4 sm:px-6", maxWidthClass[maxWidth], className)}>
+    <div
+      className={cn(
+        "w-full min-w-0 mx-auto px-4 sm:px-6 overflow-x-hidden",
+        maxWidthClass[maxWidth],
+        className
+      )}
+    >
       {children}
     </div>
   );
