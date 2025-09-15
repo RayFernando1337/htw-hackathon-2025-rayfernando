@@ -37,11 +37,12 @@ Build an admin review workflow that lets admins review host-submitted events, le
 - Phase 2.3: Event Detail Review + Feedback Drawer
   - Grouped fields, open threads on each field, drawer for reasons/message/history.  
     UI: [`components/review/ReviewField.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/components/review/ReviewField.tsx), [`components/review/FeedbackDrawer.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/components/review/FeedbackDrawer.tsx)
+  - Admin view dedupes threads per field and shows most recent activity; host replies de-duped client-side.
   - Convex: createThread, addComment, resolveThread, getThreadsByEvent, getAuditByEvent.  
     Code: [`convex/feedback.ts`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/convex/feedback.ts)
 - Phase 2.4: Status Transitions + Notifications
-  - `requestChanges`, `approve` mutations update status, audit, and create notifications.  
-    Code: [`convex/events.ts`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/convex/events.ts#L491-L547)
+  - `requestChanges`, `approve` mutations update status, audit, and create notifications. Request Changes supports optional `reason` and `fieldsWithIssues` for clearer guidance.
+    Code: [`convex/events.ts`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/convex/events.ts#L489-L499)
 - Phase 2.5: Host Visibility & Replies
   - Host event page shows open threads and allows replies; feedback badges near fields in edit form.  
     Code: [`app/dashboard/events/[id]/page.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/app/dashboard/events/%5Bid%5D/page.tsx), [`components/event-form/FeedbackBadge.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/components/event-form/FeedbackBadge.tsx)
@@ -55,6 +56,8 @@ Build an admin review workflow that lets admins review host-submitted events, le
 - Host can reply to threads; admin sees updates in activity timeline.
 - Audit timeline records feedback and status changes with actor/time.
 - Notifications dropdown shows unread badge count for hosts, lists latest items, and marks items as read on click (navigates to event when applicable).
+- Stage indicator bar reflects status changes on both host and admin pages.
+- Request Changes includes optional reason and tagged fields in audit trail and notification body.
 
 ## Security Considerations
 - Only admins can access `/dashboard/review` and perform admin mutations (`requestChanges`, `approve`, `createThread`, `resolveThread`).

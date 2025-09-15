@@ -1,6 +1,6 @@
 # Phase 2: Admin Review & Field-Level Feedback (Active)
 
-Status: In Progress → Functionally Complete (UI polish pending)
+Status: Functionally Complete (Phase 2 ready) — UI polish deferred to backlog
 
 ## Success Criteria
 - [x] Review queue shows all pending events
