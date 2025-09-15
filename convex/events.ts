@@ -833,6 +833,58 @@ export const adminSetStatus = mutation({
   },
 });
 
+// Admin: update arbitrary event fields at any time
+export const adminUpdateFields = mutation({
+  args: {
+    id: v.id("events"),
+    // Accept a shallow partial of event fields; rely on server-side normalization + validators elsewhere
+    title: v.optional(v.string()),
+    shortDescription: v.optional(v.string()),
+    eventDate: v.optional(v.string()),
+    venue: v.optional(v.string()),
+    capacity: v.optional(v.number()),
+    formats: v.optional(v.array(v.string())),
+    isPublic: v.optional(v.boolean()),
+    hasHostedBefore: v.optional(v.boolean()),
+    targetAudience: v.optional(v.string()),
+    planningDocUrl: v.optional(v.string()),
+    lumaUrl: v.optional(v.string()),
+    onCalendar: v.optional(v.boolean()),
+    checklistTemplate: v.optional(v.string()),
+    agreementAcceptedAt: v.optional(v.number()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const admin = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!admin || admin.role !== "admin") throw new Error("Unauthorized");
+
+    const { id, ...data } = args;
+    const update = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
+    if (Object.keys(update).length === 0) return null;
+
+    const before = await ctx.db.get(id);
+    await ctx.db.patch(id, update as any);
+
+    await ctx.db.insert("auditLog", {
+      eventId: id,
+      actorId: admin._id,
+      action: "admin_update_fields",
+      fromValue: before,
+      toValue: update,
+      metadata: {},
+      timestamp: Date.now(),
+    });
+
+    return null;
+  },
+});
+
 // Basic checklist templates embedded for server-side generation
 const CHECKLIST_TEMPLATES: Record<
   string,

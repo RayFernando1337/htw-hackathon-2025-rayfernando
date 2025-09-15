@@ -44,6 +44,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Steps } from "@/components/ui/steps";
@@ -134,12 +141,15 @@ export default function EventDetailPage() {
   const eventId = params.id as Id<"events">;
   const event = useQuery(api.events.getEventById, { id: eventId });
   const updateDraft = useMutation(api.events.updateDraft);
+  const adminUpdateFields = useMutation(api.events.adminUpdateFields);
   const submitEvent = useMutation(api.events.submitEvent);
   const deleteEvent = useMutation(api.events.deleteEvent);
   const updateLumaUrl = useMutation(api.events.updateLumaUrl);
   const generateChecklist = useMutation(api.events.generateChecklistForEvent);
   const toggleChecklistItem = useMutation(api.events.toggleChecklistItem);
   const conflicts = useQuery(api.events.getVenueConflictsById, { id: eventId });
+  const me = useQuery(api.users.current);
+  const adminSetStatus = useMutation(api.events.adminSetStatus);
   const threads = useQuery(api.feedback.getThreadsByEvent, { eventId });
   const addComment = useMutation(api.feedback.addComment);
   const [pendingReply, setPendingReply] = useState<Record<string, boolean>>({});
@@ -213,11 +223,15 @@ export default function EventDetailPage() {
     setLumaInput(event?.lumaUrl ?? "");
   }, [event?.lumaUrl]);
 
-  // Keep edit mode consistent with server state even during loading
+  const isAdmin = (me as any)?.role === "admin";
+  const [forcedStatus, setForcedStatus] = useState<string>("");
+
+  // Keep edit mode consistent with server state even during loading.
+  // Admins can edit at any status, so only auto-close for non-admins.
   const isEditable = event?.status === "draft" || event?.status === "changes_requested";
   useEffect(() => {
-    if (event && !isEditable && isEditing) setIsEditing(false);
-  }, [event, isEditable, isEditing]);
+    if (event && !isEditable && isEditing && !isAdmin) setIsEditing(false);
+  }, [event, isEditable, isEditing, isAdmin]);
 
   if (event === undefined) {
     return <EventDetailLoading />;
@@ -246,18 +260,25 @@ export default function EventDetailPage() {
 
   const handleSave = async (data: EventEditFormData) => {
     try {
-      if (!canEdit) {
-        toast.error("This event can't be edited in its current state.");
-        setIsEditing(false);
-        return;
-      }
-      // Do not send agreementAccepted to backend; convert to agreementAcceptedAt
       const { agreementAccepted, ...rest } = data;
-      await updateDraft({
-        id: eventId,
-        ...rest,
-        agreementAcceptedAt: agreementAccepted ? Date.now() : undefined,
-      });
+      if (isAdmin) {
+        await adminUpdateFields({
+          id: eventId,
+          ...rest,
+          agreementAcceptedAt: agreementAccepted ? Date.now() : undefined,
+        } as any);
+      } else {
+        if (!canEdit) {
+          toast.error("This event can't be edited in its current state.");
+          setIsEditing(false);
+          return;
+        }
+        await updateDraft({
+          id: eventId,
+          ...rest,
+          agreementAcceptedAt: agreementAccepted ? Date.now() : undefined,
+        });
+      }
       toast.success("Event updated successfully!");
       setIsEditing(false);
     } catch (error: any) {
@@ -793,6 +814,56 @@ export default function EventDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {isAdmin && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Admin Controls</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Set Status</div>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={forcedStatus || (event.status as string)}
+                      onValueChange={setForcedStatus}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="submitted">Submitted</SelectItem>
+                        <SelectItem value="changes_requested">Changes Requested</SelectItem>
+                        <SelectItem value="resubmitted">Resubmitted</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="published">Published</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="secondary"
+                      onClick={async () => {
+                        if (!forcedStatus) return;
+                        try {
+                          await adminSetStatus({ id: eventId, status: forcedStatus as any });
+                          toast.success("Status updated");
+                        } catch (err: any) {
+                          toast.error(err.message || "Failed to update status");
+                        }
+                      }}
+                    >
+                      Update
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Button variant="outline" onClick={() => setIsEditing(true)}>
+                    Edit as Admin
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </DashboardSection>
       )}
     </PageContainer>
