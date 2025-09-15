@@ -135,6 +135,22 @@ export default function EventDetailPage() {
   const addComment = useMutation(api.feedback.addComment);
   const [pendingReply, setPendingReply] = useState<Record<string, boolean>>({});
 
+  // Open feedback threads: group by field, pick the latest by lastActivity, sort recent first
+  const openThreads = React.useMemo(() => {
+    if (!threads) return [] as any[];
+    const open = (threads as any[]).filter((t) => t.status === "open");
+    const byField = new Map<string, any>();
+    for (const t of open) {
+      const key = t.fieldPath;
+      const last = t.lastActivity ?? (t.comments?.[t.comments.length - 1]?.createdAt ?? t.createdAt);
+      const current = byField.get(key);
+      if (!current || last > (current._last || 0)) {
+        byField.set(key, { ...t, _last: last });
+      }
+    }
+    return Array.from(byField.values()).sort((a, b) => b._last - a._last);
+  }, [threads]);
+
   const form = useForm<EventEditFormData>({
     resolver: zodResolver(eventEditSchema),
     values: event
@@ -367,30 +383,46 @@ export default function EventDetailPage() {
       </Alert>
 
       {/* Feedback (if any) */}
-      {threads && threads.length > 0 && (
+      {openThreads && openThreads.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Feedback from Admin</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {threads
-              ?.filter((t: any) => t.status === "open")
-              .map((t: any) => (
-                <div key={t._id} className="border rounded p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="font-medium">Field: {t.fieldPath}</div>
+            <div className="text-sm text-muted-foreground">{openThreads.length} open item{openThreads.length > 1 ? "s" : ""} • sorted by most recent activity</div>
+            {openThreads.map((t: any) => (
+              <div key={t._id} className="border rounded p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-medium">Field: {t.fieldPath}</div>
+                  <div className="flex items-center gap-2">
                     {t.reason && (
                       <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-200">{t.reason}</Badge>
                     )}
+                    <span className="text-xs text-muted-foreground">Updated {new Date((t.lastActivity ?? t.createdAt)).toLocaleString()}</span>
                   </div>
-                  <div className="mt-2 space-y-2">
-                    {t.comments?.map((c: any) => (
-                      <div key={c._id} className="text-sm text-muted-foreground">
-                        <span className="text-foreground font-medium">{c.author?.name || "User"}:</span> {c.message}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-2 flex gap-2">
+                </div>
+
+                <div className="mt-2 space-y-1">
+                  {(t.comments ?? []).slice(-2).map((c: any) => (
+                    <div key={c._id} className="text-sm text-muted-foreground">
+                      <span className="text-foreground font-medium">{c.author?.name || "User"}:</span> {c.message}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      setIsEditing(true);
+                      setTimeout(() => form.setFocus(t.fieldPath as any), 0);
+                    }}
+                  >
+                    Fix this field
+                  </Button>
+
+                  <div className="flex-1 min-w-[240px] flex gap-2">
                     <input
                       type="text"
                       placeholder="Reply to feedback..."
@@ -429,7 +461,8 @@ export default function EventDetailPage() {
                     </Button>
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}

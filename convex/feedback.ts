@@ -179,6 +179,7 @@ export const getThreadsByEvent = query({
         if (a) authorsMap.set(aid, a);
       }
 
+      const lastActivity = comments.length ? comments[comments.length - 1].createdAt : t.createdAt;
       result.push({
         _id: t._id,
         eventId: t.eventId,
@@ -187,6 +188,7 @@ export const getThreadsByEvent = query({
         reason: t.reason,
         createdAt: t.createdAt,
         resolvedAt: t.resolvedAt,
+        lastActivity,
         comments: comments.map((c) => ({
           _id: c._id,
           message: c.message,
