@@ -1,35 +1,34 @@
 "use client";
 
-import { VenueConflictWarning } from "@/components/events/collision-warning";
-import { AuditTimeline } from "@/components/review/AuditTimeline";
-import { FeedbackDrawer } from "@/components/review/FeedbackDrawer";
-import { ReviewField } from "@/components/review/ReviewField";
+import { useMemo, useState } from "react";
+import { useParams } from "next/navigation";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { CheckCircle, MessageSquare } from "lucide-react";
+import { ReviewField } from "@/components/review/ReviewField";
+import { FeedbackDrawer } from "@/components/review/FeedbackDrawer";
+import { AuditTimeline } from "@/components/review/AuditTimeline";
 import { PageContainer } from "@/components/ui/page-container";
 import { Steps } from "@/components/ui/steps";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
-import { FIELD_GROUPS } from "@/lib/events/fields";
 import { statusToStepIndex } from "@/lib/events/status";
-import { useMutation, useQuery } from "convex/react";
+import { FIELD_GROUPS } from "@/lib/events/fields";
 import type { FunctionReturnType } from "convex/server";
-import { CheckCircle, MessageSquare } from "lucide-react";
-import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import type { Id } from "@/convex/_generated/dataModel";
 
 export default function ReviewEventPage() {
   const params = useParams<{ id: string }>();
   const event = useQuery(api.events.getForReview, { id: params.id as Id<"events"> });
-  const threads = useQuery(api.feedback.getThreadsByEvent, {
-    eventId: params.id as Id<"events">,
-  }) as FunctionReturnType<typeof api.feedback.getThreadsByEvent> | undefined;
+  const threads = useQuery(api.feedback.getThreadsByEvent, { eventId: params.id as Id<"events"> }) as
+    | FunctionReturnType<typeof api.feedback.getThreadsByEvent>
+    | undefined;
   const threadsByField = useMemo(() => {
     if (!threads) return {} as Record<string, any>;
     const byField: Record<string, any> = {};
     for (const t of threads as any[]) {
-      const last = t.lastActivity ?? t.comments?.[t.comments.length - 1]?.createdAt ?? t.createdAt;
+      const last = t.lastActivity ?? (t.comments?.[t.comments.length - 1]?.createdAt ?? t.createdAt);
       const cur = byField[t.fieldPath];
       if (!cur || last > (cur._last || 0)) byField[t.fieldPath] = { ...t, _last: last };
     }
@@ -38,21 +37,14 @@ export default function ReviewEventPage() {
 
   const requestChanges = useMutation(api.events.requestChanges);
   const approveEvent = useMutation(api.events.approve);
-  const markPublished = useMutation(api.events.markPublished);
   const createThread = useMutation(api.feedback.createThread);
 
   const [selectedField, setSelectedField] = useState<string | null>(null);
 
   const selectedThread = threads?.find((t: any) => t.fieldPath === selectedField);
-  const selectedTitle = FIELD_GROUPS.flatMap((g) => g.fields).find(
-    (f) => f.key === selectedField
-  )?.label;
+  const selectedTitle = FIELD_GROUPS.flatMap((g) => g.fields).find((f) => f.key === selectedField)?.label;
 
-  async function handleSubmitFeedback(
-    message: string,
-    reason?: string,
-    fieldsWithIssues?: string[]
-  ) {
+  async function handleSubmitFeedback(message: string, reason?: string, fieldsWithIssues?: string[]) {
     if (!event?._id || !selectedField) return;
     if (selectedField === "_request_changes") {
       await requestChanges({ id: event._id, message, reason, fieldsWithIssues } as any);
@@ -75,131 +67,80 @@ export default function ReviewEventPage() {
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="col-span-1 lg:col-span-2 space-y-4 sm:space-y-6">
           <Card>
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle>{event?.title}</CardTitle>
+                <CardDescription>
+                  Submitted by {event?.host?.name} {event?.host?.orgName ? `• ${event.host.orgName}` : ""}
+                </CardDescription>
+              </div>
+              <Badge variant="outline">{event?.status}</Badge>
+            </div>
+            <div className="mt-3">
+              <Steps
+                steps={[
+                  { label: "Draft" },
+                  { label: "Under Review" },
+                  { label: "Changes Requested" },
+                  { label: "Approved" },
+                  { label: "Published" },
+                ]}
+                current={statusToStepIndex((event?.status as any) || "draft")}
+              />
+            </div>
+          </CardHeader>
+        </Card>
+
+        {FIELD_GROUPS.map((group) => (
+          <Card key={group.title}>
             <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle>{event?.title}</CardTitle>
-                  <CardDescription>
-                    Submitted by {event?.host?.name}{" "}
-                    {event?.host?.orgName ? `• ${event.host.orgName}` : ""}
-                  </CardDescription>
-                </div>
-                <Badge variant="outline">{event?.status}</Badge>
-              </div>
-              <div className="mt-3">
-                <Steps
-                  steps={[
-                    { label: "Draft" },
-                    { label: "Under Review" },
-                    { label: "Changes Requested" },
-                    { label: "Approved" },
-                    { label: "Published" },
-                  ]}
-                  current={statusToStepIndex((event?.status as any) || "draft")}
-                />
-              </div>
+              <CardTitle className="text-lg">{group.title}</CardTitle>
             </CardHeader>
+            <CardContent className="space-y-4">
+              {group.fields.map((field) => (
+                <ReviewField
+                  key={field.key}
+                  field={field as any}
+                  value={(event as any)?.[field.key]}
+                  thread={threadsByField[field.key]}
+                  onFeedback={() => setSelectedField(field.key)}
+                />
+              ))}
+            </CardContent>
           </Card>
-
-          {FIELD_GROUPS.map((group) => (
-            <Card key={group.title}>
-              <CardHeader>
-                <CardTitle className="text-lg">{group.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {group.fields.map((field) => (
-                  <ReviewField
-                    key={field.key}
-                    field={field as any}
-                    value={(event as any)?.[field.key]}
-                    thread={threadsByField[field.key]}
-                    onFeedback={() => setSelectedField(field.key)}
-                  />
-                ))}
-              </CardContent>
-            </Card>
-          ))}
-
-          {/* Show venue conflicts for admin awareness */}
-          {event?.eventDate && event?.venue && (
-            <VenueConflictWarning
-              eventDate={event.eventDate}
-              venue={event.venue}
-              excludeId={event._id}
-            />
-          )}
-        </div>
+        ))}
+      </div>
 
         <div className="space-y-4 col-span-1">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {/* Actions based on event status */}
-              {event?.status === "submitted" || event?.status === "resubmitted" ? (
-                <>
-                  <Button
-                    className="w-full"
-                    variant="default"
-                    onClick={() => approveEvent({ id: event._id })}
-                  >
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Approve Event
-                  </Button>
-                  <Button
-                    className="w-full"
-                    variant="outline"
-                    onClick={() => setSelectedField("_request_changes")}
-                  >
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Request Changes
-                  </Button>
-                </>
-              ) : event?.status === "approved" && event?.lumaUrl ? (
-                <Button
-                  className="w-full"
-                  variant="default"
-                  onClick={() => markPublished({ id: event._id })}
-                >
-                  🌐 Mark as Published
-                </Button>
-              ) : event?.status === "approved" ? (
-                <div className="text-center p-4 text-muted-foreground text-sm">
-                  <p>Event approved!</p>
-                  <p>Waiting for host to add Lu.ma URL</p>
-                </div>
-              ) : event?.status === "published" ? (
-                <div className="text-center p-4 text-green-600 text-sm">
-                  <CheckCircle className="mx-auto h-8 w-8 mb-2" />
-                  <p className="font-medium">Event Published</p>
-                  {event.lumaUrl && (
-                    <a
-                      href={event.lumaUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline text-xs"
-                    >
-                      View Lu.ma Event →
-                    </a>
-                  )}
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button className="w-full" variant="default" onClick={() => approveEvent({ id: event._id })}>
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Approve Event
+            </Button>
+            <Button className="w-full" variant="outline" onClick={() => setSelectedField("_request_changes") }>
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Request Changes
+            </Button>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Activity Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AuditTimeline eventId={event._id} />
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Activity Timeline</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AuditTimeline eventId={event._id} />
+          </CardContent>
+        </Card>
         </div>
-      </div>
+           </div>
 
-      <FeedbackDrawer
+        <FeedbackDrawer
         open={!!selectedField}
         onClose={() => setSelectedField(null)}
         eventId={event._id}
@@ -208,7 +149,7 @@ export default function ReviewEventPage() {
         thread={selectedThread}
         availableFields={FIELD_GROUPS.flatMap((g) => g.fields)}
         onSubmit={handleSubmitFeedback}
-      />
-    </PageContainer>
+        />
+          </PageContainer>
   );
 }
