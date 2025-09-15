@@ -1,6 +1,32 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
+
+// Ensure legacy event documents (created before new required fields) conform to
+// the current schema by applying sensible defaults. This avoids return validator
+// mismatches in queries.
+function normalizeEvent(ev: any) {
+  return {
+    ...ev,
+    status: ev.status ?? "draft",
+    title: ev.title ?? "",
+    shortDescription: ev.shortDescription ?? "",
+    eventDate: ev.eventDate ?? "",
+    venue: ev.venue ?? "",
+    capacity: ev.capacity ?? 50,
+    formats: ev.formats ?? [],
+    isPublic: ev.isPublic ?? true,
+    hasHostedBefore: ev.hasHostedBefore ?? false,
+    targetAudience: ev.targetAudience ?? "",
+    planningDocUrl: ev.planningDocUrl ?? undefined,
+    lumaUrl: ev.lumaUrl ?? undefined,
+    onCalendar: ev.onCalendar ?? false,
+    agreementAcceptedAt: ev.agreementAcceptedAt ?? undefined,
+    submittedAt: ev.submittedAt ?? undefined,
+    approvedAt: ev.approvedAt ?? undefined,
+    checklistTemplate: ev.checklistTemplate ?? "general",
+    checklist: ev.checklist ?? [],
+  };
+}
 
 // Create a draft event
 export const createDraft = mutation({
@@ -37,7 +63,7 @@ export const createDraft = mutation({
       checklistTemplate: "general",
       checklist: [],
     });
-  }
+  },
 });
 
 // Update a draft event
@@ -87,7 +113,7 @@ export const updateDraft = mutation({
     );
 
     await ctx.db.patch(args.id, filteredData);
-  }
+  },
 });
 
 // Submit event for review
@@ -116,12 +142,14 @@ export const submitEvent = mutation({
     // Validate all required fields — return field-specific guidance
     const missing: string[] = [];
     if (!event.title) missing.push("Event Title");
-    if (!event.shortDescription || event.shortDescription.trim().length < 50) missing.push("Short Description (min 50 chars)");
-       if (!event.eventDate) missing.push("Event Date");
+    if (!event.shortDescription || event.shortDescription.trim().length < 50)
+      missing.push("Short Description (min 50 chars)");
+    if (!event.eventDate) missing.push("Event Date");
     if (!event.venue) missing.push("Venue");
     if (!event.targetAudience) missing.push("Target Audience");
-    if (!event.formats || event.formats.length === 0) missing.push("Event Format (select at least one)");
-       if (!event.agreementAcceptedAt) missing.push("Host Agreement");
+    if (!event.formats || event.formats.length === 0)
+      missing.push("Event Format (select at least one)");
+    if (!event.agreementAcceptedAt) missing.push("Host Agreement");
 
     if (missing.length > 0) {
       throw new Error(`Please complete the following before submitting: ${missing.join(", ")}`);
@@ -140,31 +168,33 @@ export const submitEvent = mutation({
     });
 
     // TODO: Send notification to admins
-  }
+  },
 });
 
 // Get all events for the current user
 export const getMyEvents = query({
   args: {},
-  returns: v.array(v.object({
-    _id: v.id("events"),
-    _creationTime: v.number(),
-    title: v.string(),
-    shortDescription: v.string(),
-    eventDate: v.string(),
-    venue: v.string(),
-    status: v.union(
-      v.literal("draft"),
-      v.literal("submitted"),
-      v.literal("changes_requested"),
-      v.literal("resubmitted"),
-      v.literal("approved"),
-      v.literal("published")
-    ),
-    capacity: v.number(),
-    formats: v.array(v.string()),
-    submittedAt: v.optional(v.number()),
-  })),
+  returns: v.array(
+    v.object({
+      _id: v.id("events"),
+      _creationTime: v.number(),
+      title: v.string(),
+      shortDescription: v.string(),
+      eventDate: v.string(),
+      venue: v.string(),
+      status: v.union(
+        v.literal("draft"),
+        v.literal("submitted"),
+        v.literal("changes_requested"),
+        v.literal("resubmitted"),
+        v.literal("approved"),
+        v.literal("published")
+      ),
+      capacity: v.number(),
+      formats: v.array(v.string()),
+      submittedAt: v.optional(v.number()),
+    })
+  ),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return [];
@@ -182,60 +212,68 @@ export const getMyEvents = query({
       .order("desc")
       .collect();
 
-    return events.map(event => ({
-      _id: event._id,
-      _creationTime: event._creationTime,
-      title: event.title,
-      shortDescription: event.shortDescription,
-      eventDate: event.eventDate,
-      venue: event.venue,
-      status: event.status,
-      capacity: event.capacity,
-      formats: event.formats,
-      submittedAt: event.submittedAt,
-    }));
-  }
+    return events.map((event) => {
+      const e = normalizeEvent(event);
+      return {
+        _id: e._id,
+        _creationTime: e._creationTime,
+        title: e.title,
+        shortDescription: e.shortDescription,
+        eventDate: e.eventDate,
+        venue: e.venue,
+        status: e.status,
+        capacity: e.capacity,
+        formats: e.formats,
+        submittedAt: e.submittedAt,
+      };
+    });
+  },
 });
 
 // Get a single event by ID
 export const getEventById = query({
   args: { id: v.id("events") },
-  returns: v.union(v.null(), v.object({
-    _id: v.id("events"),
-    _creationTime: v.number(),
-    hostId: v.id("users"),
-    status: v.union(
-      v.literal("draft"),
-      v.literal("submitted"),
-      v.literal("changes_requested"),
-      v.literal("resubmitted"),
-      v.literal("approved"),
-      v.literal("published")
-    ),
-    title: v.string(),
-    shortDescription: v.string(),
-    eventDate: v.string(),
-    venue: v.string(),
-    capacity: v.number(),
-    formats: v.array(v.string()),
-    isPublic: v.boolean(),
-    hasHostedBefore: v.boolean(),
-    targetAudience: v.string(),
-    planningDocUrl: v.optional(v.string()),
-    lumaUrl: v.optional(v.string()),
-    onCalendar: v.boolean(),
-    agreementAcceptedAt: v.optional(v.number()),
-    submittedAt: v.optional(v.number()),
-    approvedAt: v.optional(v.number()),
-    checklistTemplate: v.string(),
-    checklist: v.array(v.object({
-      id: v.string(),
-      task: v.string(),
-      completed: v.boolean(),
-      dueDate: v.optional(v.string()),
-      section: v.string(),
-    })),
-  })),
+  returns: v.union(
+    v.null(),
+    v.object({
+      _id: v.id("events"),
+      _creationTime: v.number(),
+      hostId: v.id("users"),
+      status: v.union(
+        v.literal("draft"),
+        v.literal("submitted"),
+        v.literal("changes_requested"),
+        v.literal("resubmitted"),
+        v.literal("approved"),
+        v.literal("published")
+      ),
+      title: v.string(),
+      shortDescription: v.string(),
+      eventDate: v.string(),
+      venue: v.string(),
+      capacity: v.number(),
+      formats: v.array(v.string()),
+      isPublic: v.boolean(),
+      hasHostedBefore: v.boolean(),
+      targetAudience: v.string(),
+      planningDocUrl: v.optional(v.string()),
+      lumaUrl: v.optional(v.string()),
+      onCalendar: v.boolean(),
+      agreementAcceptedAt: v.optional(v.number()),
+      submittedAt: v.optional(v.number()),
+      approvedAt: v.optional(v.number()),
+      checklistTemplate: v.string(),
+      checklist: v.array(
+        v.object({
+          id: v.string(),
+          task: v.string(),
+          completed: v.boolean(),
+          dueDate: v.optional(v.string()),
+          section: v.string(),
+        })
+      ),
+    })
+  ),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
@@ -256,8 +294,8 @@ export const getEventById = query({
       return null;
     }
 
-    return event;
-  }
+    return normalizeEvent(event);
+  },
 });
 
 // Delete a draft event
@@ -289,7 +327,7 @@ export const deleteEvent = mutation({
     }
 
     await ctx.db.delete(args.id);
-  }
+  },
 });
 
 // Get event statistics for dashboard
@@ -334,40 +372,45 @@ export const getEventStats = query({
       .withIndex("by_host", (q) => q.eq("hostId", user._id))
       .collect();
 
-    const stats = events.reduce((acc, event) => {
-      acc.totalEvents++;
-      switch (event.status) {
-        case "draft":
-          acc.draftCount++;
-          break;
-        case "submitted":
-        case "resubmitted":
-          acc.submittedCount++;
-          break;
-        case "approved":
-          acc.approvedCount++;
-          break;
-        case "published":
-          acc.publishedCount++;
-          break;
+    const stats = events.reduce(
+      (acc, event) => {
+        acc.totalEvents++;
+        switch (event.status) {
+          case "draft":
+            acc.draftCount++;
+            break;
+          case "submitted":
+          case "resubmitted":
+            acc.submittedCount++;
+            break;
+          case "approved":
+            acc.approvedCount++;
+            break;
+          case "published":
+            acc.publishedCount++;
+            break;
+        }
+        return acc;
+      },
+      {
+        totalEvents: 0,
+        draftCount: 0,
+        submittedCount: 0,
+        approvedCount: 0,
+        publishedCount: 0,
       }
-      return acc;
-    }, {
-      totalEvents: 0,
-      draftCount: 0,
-      submittedCount: 0,
-      approvedCount: 0,
-      publishedCount: 0,
-    });
+    );
 
     return stats;
-  }
+  },
 });
 
 // Admin: review queue
 export const getReviewQueue = query({
   args: {
-    status: v.optional(v.array(v.union(v.literal("submitted"), v.literal("resubmitted"), v.literal("all"))))
+    status: v.optional(
+      v.array(v.union(v.literal("submitted"), v.literal("resubmitted"), v.literal("all")))
+    ),
   },
   returns: v.array(
     v.object({
@@ -405,24 +448,34 @@ export const getReviewQueue = query({
     if (!admin || admin.role !== "admin") return [];
 
     // Fetch events by status
-    const statuses = args.status && args.status.length > 0 ? args.status : ["submitted", "resubmitted"];
+    const statuses =
+      args.status && args.status.length > 0 ? args.status : ["submitted", "resubmitted"];
     const includeAll = statuses.includes("all" as any);
 
     const events: any[] = [];
     const pushWithEnrichment = async (ev: any) => {
-      const host = await ctx.db.get(ev.hostId);
+      const base = normalizeEvent(ev);
+      const host = await ctx.db.get(base.hostId);
       // Count open threads using composite index
       const openThreadCount = (
         await ctx.db
           .query("feedbackThreads")
-          .withIndex("by_event_and_status", (q) =>
-            q.eq("eventId", ev._id).eq("status", "open")
-          )
+          .withIndex("by_event_and_status", (q) => q.eq("eventId", base._id).eq("status", "open"))
           .collect()
       ).length;
       const h: any = host;
       events.push({
-        ...ev,
+        _id: base._id,
+        _creationTime: base._creationTime,
+        hostId: base.hostId,
+        status: base.status,
+        title: base.title,
+        shortDescription: base.shortDescription,
+        eventDate: base.eventDate,
+        venue: base.venue,
+        capacity: base.capacity,
+        formats: base.formats,
+        submittedAt: base.submittedAt,
         host: { _id: h?._id, name: h?.name ?? "Host", orgName: h?.orgName ?? "" },
         hasOpenThreads: openThreadCount > 0,
         openThreadCount,
@@ -516,11 +569,12 @@ export const getForReview = query({
     const event = await ctx.db.get(args.id);
     if (!event) return null;
 
-    const host = await ctx.db.get(event.hostId);
+    const base = normalizeEvent(event);
+    const host = await ctx.db.get(base.hostId);
 
     const h: any = host;
     return {
-      ...event,
+      ...base,
       host: { _id: h?._id, name: h?.name ?? "Host", orgName: h?.orgName ?? "" },
     };
   },
@@ -565,7 +619,10 @@ export const requestChanges = mutation({
     });
 
     // Notification to host
-    const fieldsNote = args.fieldsWithIssues && args.fieldsWithIssues.length > 0 ? ` Fields: ${args.fieldsWithIssues.join(", ")}.` : "";
+    const fieldsNote =
+      args.fieldsWithIssues && args.fieldsWithIssues.length > 0
+        ? ` Fields: ${args.fieldsWithIssues.join(", ")}.`
+        : "";
     await ctx.db.insert("notifications", {
       userId: event.hostId,
       type: "status_change",

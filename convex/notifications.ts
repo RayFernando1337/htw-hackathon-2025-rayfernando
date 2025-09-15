@@ -1,6 +1,5 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
 
 export const create = mutation({
@@ -54,6 +53,7 @@ export const getForCurrentUser = query({
   args: {},
   returns: v.array(
     v.object({
+      _creationTime: v.number(),
       _id: v.id("notifications"),
       userId: v.id("users"),
       type: v.string(),
