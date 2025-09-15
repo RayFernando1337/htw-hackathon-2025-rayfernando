@@ -995,7 +995,89 @@ export const detectVenueConflicts = query({
   },
 });
 
-// Admin: Mark event as published
+// Admin: Change event status to any state
+export const changeEventStatus = mutation({
+  args: {
+    id: v.id("events"),
+    newStatus: v.union(
+      v.literal("draft"),
+      v.literal("submitted"),
+      v.literal("changes_requested"),
+      v.literal("resubmitted"),
+      v.literal("approved"),
+      v.literal("published")
+    ),
+    reason: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const admin = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!admin || admin.role !== "admin") throw new Error("Unauthorized");
+
+    const event = await ctx.db.get(args.id);
+    if (!event) throw new Error("Event not found");
+
+    const oldStatus = event.status;
+
+    // Handle special status transitions
+    const updateData: any = { status: args.newStatus };
+
+    if (args.newStatus === "published") {
+      updateData.onCalendar = true;
+      // Don't require Lu.ma URL for admin override, but warn if missing
+    }
+
+    if (args.newStatus === "approved" && !event.approvedAt) {
+      updateData.approvedAt = Date.now();
+
+      // Generate checklist if not present
+      if (!event.checklist || event.checklist.length === 0) {
+        const templateName = getEventTemplateFromFormats(event.formats);
+        const checklist = generateChecklist(templateName, new Date(event.eventDate));
+        updateData.checklistTemplate = templateName;
+        updateData.checklist = checklist;
+      }
+    }
+
+    await ctx.db.patch(args.id, updateData);
+
+    await ctx.db.insert("auditLog", {
+      eventId: args.id,
+      actorId: admin._id,
+      action: "admin_status_change",
+      fromValue: oldStatus,
+      toValue: args.newStatus,
+      metadata: { reason: args.reason || "Admin override" },
+      timestamp: Date.now(),
+    });
+
+    // Notify host of status change
+    const statusMessages = {
+      draft: "Your event has been moved back to draft status",
+      submitted: "Your event has been moved back to submitted status",
+      changes_requested: "Your event requires additional changes",
+      resubmitted: "Your event has been marked as resubmitted",
+      approved: "Your event has been approved",
+      published: "Your event has been published and is now live!",
+    };
+
+    await ctx.db.insert("notifications", {
+      userId: event.hostId,
+      type: "status_change",
+      eventId: args.id,
+      message: statusMessages[args.newStatus],
+      createdAt: Date.now(),
+    });
+  },
+});
+
+// Legacy function for backward compatibility
 export const markPublished = mutation({
   args: { id: v.id("events") },
   returns: v.null(),
@@ -1012,13 +1094,7 @@ export const markPublished = mutation({
     const event = await ctx.db.get(args.id);
     if (!event) throw new Error("Event not found");
 
-    if (event.status !== "approved") {
-      throw new Error("Only approved events can be published");
-    }
-
-    if (!event.lumaUrl) {
-      throw new Error("Lu.ma URL is required before publishing");
-    }
+    const oldStatus = event.status;
 
     await ctx.db.patch(args.id, {
       status: "published",
@@ -1028,10 +1104,10 @@ export const markPublished = mutation({
     await ctx.db.insert("auditLog", {
       eventId: args.id,
       actorId: admin._id,
-      action: "status_change",
-      fromValue: event.status,
+      action: "admin_status_change",
+      fromValue: oldStatus,
       toValue: "published",
-      metadata: {},
+      metadata: { reason: "Marked as published" },
       timestamp: Date.now(),
     });
 
@@ -1039,7 +1115,7 @@ export const markPublished = mutation({
       userId: event.hostId,
       type: "status_change",
       eventId: args.id,
-      message: `Your event has been published and is now live!`,
+      message: "Your event has been published and is now live!",
       createdAt: Date.now(),
     });
   },

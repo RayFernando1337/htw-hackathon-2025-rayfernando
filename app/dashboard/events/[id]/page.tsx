@@ -59,6 +59,7 @@ import {
 import { AutoSaveIndicator } from "@/components/event-form/field-with-help";
 import { AudienceStep, BasicsStep, LogisticsStep } from "@/components/event-form/form-steps";
 import { HostAgreementField } from "@/components/event-form/HostAgreementField";
+import { AdminStatusControls } from "@/components/events/admin-status-controls";
 import { DashboardSection, PageContainer, PageHeader } from "@/components/ui/page-container";
 import { useFormDraft } from "@/hooks/useFormDraft";
 
@@ -131,9 +132,11 @@ export default function EventDetailPage() {
 
   const eventId = params.id as Id<"events">;
   const event = useQuery(api.events.getEventById, { id: eventId });
+  const currentUser = useQuery(api.users.current, {});
   const updateDraft = useMutation(api.events.updateDraft);
   const submitEvent = useMutation(api.events.submitEvent);
   const deleteEvent = useMutation(api.events.deleteEvent);
+  const markPublished = useMutation(api.events.markPublished);
   const threads = useQuery(api.feedback.getThreadsByEvent, { eventId });
   const addComment = useMutation(api.feedback.addComment);
   const [pendingReply, setPendingReply] = useState<Record<string, boolean>>({});
@@ -230,7 +233,16 @@ export default function EventDetailPage() {
   const canEdit = event.status === "draft" || event.status === "changes_requested";
   const canDelete = event.status === "draft";
   const canSubmit = event.status === "draft" || event.status === "changes_requested";
-  const canPublish = event.status === "approved";
+
+  // Admin controls vs host controls
+  const isAdmin = currentUser?.role === "admin";
+
+  // Admins get full status control regardless of ownership
+  const canChangeStatus = isAdmin;
+
+  // Host-specific controls (only for non-admins who own the event)
+  const canPublishAsHost = event.status === "approved" && !isAdmin;
+
   const StatusIcon = config.icon;
 
   const handleSave = async (data: EventEditFormData) => {
@@ -292,6 +304,16 @@ export default function EventDetailPage() {
     }
   };
 
+  // Admin quick actions
+  const handlePublishAsAdmin = async () => {
+    try {
+      await markPublished({ id: eventId });
+      toast.success("Event marked as published!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to publish event");
+    }
+  };
+
   return (
     <PageContainer className="space-y-6" maxWidth="full">
       {/* Header */}
@@ -314,12 +336,16 @@ export default function EventDetailPage() {
               <Button onClick={handleSubmit} className="sm:hidden">
                 Submit for Review
               </Button>
-            ) : !isEditing && canPublish ? (
+            ) : !isEditing && canPublishAsHost ? (
               <Button
                 onClick={() => router.push(`/dashboard/events/${eventId}/publish`)}
                 className="sm:hidden"
               >
                 Publish Event
+              </Button>
+            ) : !isEditing && isAdmin && event.status === "approved" && event.lumaUrl ? (
+              <Button onClick={handlePublishAsAdmin} className="sm:hidden">
+                Mark as Published
               </Button>
             ) : null}
             <DropdownMenu>
@@ -340,11 +366,16 @@ export default function EventDetailPage() {
                 {canSubmit && !isEditing && (
                   <DropdownMenuItem onClick={handleSubmit}>Submit for Review</DropdownMenuItem>
                 )}
-                {canPublish && !isEditing && (
+                {canPublishAsHost && !isEditing && (
                   <DropdownMenuItem
                     onClick={() => router.push(`/dashboard/events/${eventId}/publish`)}
                   >
                     Publish Event
+                  </DropdownMenuItem>
+                )}
+                {isAdmin && event.status === "approved" && event.lumaUrl && !isEditing && (
+                  <DropdownMenuItem onClick={handlePublishAsAdmin}>
+                    Mark as Published
                   </DropdownMenuItem>
                 )}
                 {canDelete && (
@@ -383,10 +414,13 @@ export default function EventDetailPage() {
                 </Button>
               )}
               {canSubmit && !isEditing && <Button onClick={handleSubmit}>Submit for Review</Button>}
-              {canPublish && !isEditing && (
+              {canPublishAsHost && !isEditing && (
                 <Button onClick={() => router.push(`/dashboard/events/${eventId}/publish`)}>
                   Publish Event
                 </Button>
+              )}
+              {isAdmin && event.status === "approved" && event.lumaUrl && !isEditing && (
+                <Button onClick={handlePublishAsAdmin}>Mark as Published</Button>
               )}
               {canDelete && (
                 <AlertDialog>
@@ -659,6 +693,15 @@ export default function EventDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Admin Status Controls */}
+          {isAdmin && (
+            <AdminStatusControls
+              eventId={eventId}
+              currentStatus={event.status}
+              hasLumaUrl={!!event.lumaUrl}
+            />
+          )}
 
           {/* Links and Actions for Published Events */}
           {event.status === "published" && (
