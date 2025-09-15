@@ -175,7 +175,7 @@ export default function MyEventsPage() {
   }
 
   return (
-    <PageContainer className="space-y-6" maxWidth="full">
+    <PageContainer className="space-y-6 overflow-x-hidden" maxWidth="full">
       <PageHeader
         title="My Events"
         subtitle="Manage your HTW event submissions and track their progress"
