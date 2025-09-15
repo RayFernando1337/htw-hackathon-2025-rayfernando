@@ -65,24 +65,28 @@ function EventCard({ event }: { event: Event }) {
   const canEdit = event.status === "draft" || event.status === "changes_requested";
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-md transition-shadow w-full max-w-full overflow-hidden">
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1 min-w-0">
-            <CardTitle className="line-clamp-2 break-words">{event.title}</CardTitle>
+            <CardTitle className="line-clamp-2 break-words overflow-hidden text-ellipsis">
+              {event.title}
+            </CardTitle>
             <CardDescription className="mt-2">
-              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1 min-w-0">
-                  <Calendar className="h-4 w-4" />
-                  {event.eventDate ? format(new Date(event.eventDate), "PPP") : "Date TBD"}
+              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground overflow-hidden">
+                <div className="flex items-center gap-1 min-w-0 shrink">
+                  <Calendar className="h-4 w-4 shrink-0" />
+                  <span className="truncate">
+                    {event.eventDate ? format(new Date(event.eventDate), "PPP") : "Date TBD"}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1 min-w-0">
-                  <MapPin className="h-4 w-4" />
-                  {event.venue || "Venue TBD"}
+                <div className="flex items-center gap-1 min-w-0 shrink">
+                  <MapPin className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{event.venue || "Venue TBD"}</span>
                 </div>
-                <div className="flex items-center gap-1 min-w-0">
-                  <Users className="h-4 w-4" />
-                  {event.capacity} people
+                <div className="flex items-center gap-1 min-w-0 shrink">
+                  <Users className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{event.capacity} people</span>
                 </div>
               </div>
             </CardDescription>
@@ -191,7 +195,7 @@ export default function MyEventsPage() {
 
       {/* Stats Overview */}
       {stats && stats.totalEvents > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 w-full max-w-full overflow-hidden">
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold">{stats.totalEvents}</div>
@@ -229,7 +233,7 @@ export default function MyEventsPage() {
       {events.length === 0 ? (
         <EmptyState />
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-4 w-full max-w-full">
           {events.map((event) => (
             <EventCard key={event._id} event={event} />
           ))}
