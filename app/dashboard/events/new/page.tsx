@@ -213,12 +213,20 @@ export default function CreateEventPage() {
         <PageHeader
           title="Create New Event"
           subtitle={
-            <span className="sm:hidden">
-              Step {currentStep + 1} of {FORM_STEPS.length}: {FORM_STEPS[currentStep].title}
-            </span>
+            <div className="flex items-center justify-between sm:block">
+              <span className="sm:hidden">
+                Step {currentStep + 1} of {FORM_STEPS.length}: {FORM_STEPS[currentStep].title}
+              </span>
+              <div className="flex items-center gap-2 sm:hidden">
+                <AutoSaveIndicator status={autoSaveStatus} />
+                <Button variant="outline" size="sm" onClick={saveDraftNow}>
+                  Save Draft
+                </Button>
+              </div>
+            </div>
           }
           right={
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <AutoSaveIndicator status={autoSaveStatus} />
               <Button variant="outline" size="sm" onClick={saveDraftNow}>
                 Save Draft
