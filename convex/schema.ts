@@ -131,6 +131,7 @@ export default defineSchema({
     metadata: v.optional(v.object({
       fieldPath: v.optional(v.string()),
       reason: v.optional(v.string()),
+      fieldsWithIssues: v.optional(v.array(v.string())),
     })),
     timestamp: v.number(),
   })

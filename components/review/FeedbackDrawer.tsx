@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -24,12 +25,14 @@ export interface FeedbackDrawerProps {
   fieldKey: string | null;
   title?: string;
   thread?: any;
-  onSubmit: (message: string, reason?: string) => void;
+  availableFields?: Array<{ key: string; label: string }>;
+  onSubmit: (message: string, reason?: string, fieldsWithIssues?: string[]) => void;
 }
 
-export function FeedbackDrawer({ open, onClose, eventId, fieldKey, title, thread, onSubmit }: FeedbackDrawerProps) {
+export function FeedbackDrawer({ open, onClose, eventId, fieldKey, title, thread, availableFields, onSubmit }: FeedbackDrawerProps) {
   const [message, setMessage] = useState("");
   const [reason, setReason] = useState<string | undefined>(undefined);
+  const [fieldsWithIssues, setFieldsWithIssues] = useState<string[]>([]);
 
   // Load existing draft when opening
   const draft = useQuery(
@@ -48,63 +51,88 @@ export function FeedbackDrawer({ open, onClose, eventId, fieldKey, title, thread
         setMessage("");
         setReason(undefined);
       }
+      // reset per-open selection
+      setFieldsWithIssues([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, draft?._id]);
 
   const isRequestChanges = fieldKey === "_request_changes";
-
+  
   return (
-    <Sheet open={open} onOpenChange={(v) => (!v ? onClose() : null)}>
-      <SheetContent
-        side="right"
-        className="w-full max-w-[100vw] sm:w-[600px] sm:max-w-[600px] p-0"
-        onInteractOutside={(e) => e.preventDefault()}
-      >
-        <SheetHeader className="px-4 sm:px-6 pt-4">
-          <SheetTitle>{isRequestChanges ? "Request Changes" : `Feedback: ${title}`}</SheetTitle>
-        </SheetHeader>
+  <Sheet open={open} onOpenChange={(v) => (!v ? onClose() : null)}>
+  <SheetContent
+  side="right"
+  className="w-full max-w-[100vw] sm:w-[600px] sm:max-w-[600px] p-0"
+  onInteractOutside={(e) => e.preventDefault()}
+  >
+  <SheetHeader className="px-4 sm:px-6 pt-4">
+  <SheetTitle>{isRequestChanges ? "Request Changes" : `Feedback: ${title}`}</SheetTitle>
+  </SheetHeader>
+  
+  <div className="mt-4 space-y-6 px-4 sm:px-6 pb-6 overflow-y-auto">
+  <div>
+    <Label>{isRequestChanges ? "Reason (optional)" : "Quick Reasons"}</Label>
+    <div className="flex flex-wrap gap-2 mt-2">
+      {Object.entries(QUICK_REASONS).map(([key, label]) => (
+        <Button
+          key={key}
+          size="sm"
+          variant={reason === key ? "default" : "outline"}
+          onClick={() => {
+            setReason(key);
+            if (fieldKey) {
+              upsertDraft({ eventId: eventId as any, fieldPath: fieldKey, reason: key, message: message || "" } as any);
+            }
+          }}
+        >
+          {label}
+        </Button>
+      ))}
+    </div>
+  </div>
 
-        <div className="mt-4 space-y-6 px-4 sm:px-6 pb-6 overflow-y-auto">
-          {!isRequestChanges && (
-            <div>
-              <Label>Quick Reasons</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {Object.entries(QUICK_REASONS).map(([key, label]) => (
-                  <Button
-                    key={key}
-                    size="sm"
-                    variant={reason === key ? "default" : "outline"}
-                    onClick={() => {
-                      setReason(key);
-                      if (fieldKey) {
-                        upsertDraft({ eventId: eventId as any, fieldPath: fieldKey, reason: key, message: message || "" } as any);
-                      }
-                    }}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div>
-            <Label>{isRequestChanges ? "Overall Message" : "Feedback Message"}</Label>
-            <Textarea
-              className="mt-2"
-              placeholder={isRequestChanges ? "Share an overall summary of requested changes..." : "Provide specific feedback for the host..."}
-              value={message}
-              onChange={(e) => {
-                const val = e.target.value;
-                setMessage(val);
-                if (fieldKey) {
-                  upsertDraft({ eventId: eventId as any, fieldPath: fieldKey, reason, message: val } as any);
-                }
+  {isRequestChanges && availableFields && (
+    <div>
+      <Label>Fields with issues (optional)</Label>
+      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {availableFields.map((f) => (
+          <label key={f.key} className="flex items-center gap-2 text-sm">
+            <Checkbox
+              checked={fieldsWithIssues.includes(f.key)}
+              onCheckedChange={(checked) => {
+                setFieldsWithIssues((prev) =>
+                  checked ? [...prev, f.key] : prev.filter((k) => k !== f.key)
+                );
               }}
-              rows={6}
             />
-          </div>
+            <span>{f.label}</span>
+          </label>
+        ))}
+      </div>
+      <div className="mt-2 flex gap-2">
+        <Button variant="outline" size="sm" onClick={() => setFieldsWithIssues(availableFields.map((f) => f.key))}>Select all</Button>
+        <Button variant="outline" size="sm" onClick={() => setFieldsWithIssues([])}>Clear</Button>
+      </div>
+    </div>
+  )}
+
+  <div>
+    <Label>{isRequestChanges ? "Overall Message" : "Feedback Message"}</Label>
+    <Textarea
+      className="mt-2"
+      placeholder={isRequestChanges ? "Share an overall summary of requested changes..." : "Provide specific feedback for the host..."}
+      value={message}
+      onChange={(e) => {
+        const val = e.target.value;
+        setMessage(val);
+        if (fieldKey) {
+          upsertDraft({ eventId: eventId as any, fieldPath: fieldKey, reason, message: val } as any);
+        }
+      }}
+      rows={6}
+    />
+  </div>
 
           {thread?.comments?.length ? (
             <div>
@@ -131,7 +159,7 @@ export function FeedbackDrawer({ open, onClose, eventId, fieldKey, title, thread
             </Button>
             <Button
               onClick={async () => {
-                await onSubmit(message, reason);
+                await onSubmit(message, reason, isRequestChanges ? fieldsWithIssues : undefined);
                 if (!isRequestChanges && fieldKey) {
                   await clearDraft({ eventId: eventId as any, fieldPath: fieldKey } as any);
                 }

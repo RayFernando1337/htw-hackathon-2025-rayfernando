@@ -53,10 +53,10 @@ export default function ReviewEventPage() {
   const selectedThread = threads?.find((t: any) => t.fieldPath === selectedField);
   const selectedTitle = FIELD_GROUPS.flatMap((g) => g.fields).find((f) => f.key === selectedField)?.label;
 
-  async function handleSubmitFeedback(message: string, reason?: string) {
+  async function handleSubmitFeedback(message: string, reason?: string, fieldsWithIssues?: string[]) {
     if (!event?._id || !selectedField) return;
     if (selectedField === "_request_changes") {
-      await requestChanges({ id: event._id, message });
+      await requestChanges({ id: event._id, message, reason, fieldsWithIssues } as any);
       setSelectedField(null);
       return;
     }
@@ -144,6 +144,7 @@ export default function ReviewEventPage() {
         fieldKey={selectedField}
         title={selectedTitle}
         thread={selectedThread}
+        availableFields={FIELD_GROUPS.flatMap((g) => g.fields)}
         onSubmit={handleSubmitFeedback}
         />
           </PageContainer>

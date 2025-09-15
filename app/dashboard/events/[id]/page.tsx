@@ -194,6 +194,12 @@ export default function EventDetailPage() {
     if (!isEditing) appliedRestoreRef.current = false;
   }, [isEditing, restore, event, form]);
 
+  // Keep edit mode consistent with server state even during loading
+  const isEditable = event?.status === "draft" || event?.status === "changes_requested";
+  useEffect(() => {
+    if (event && !isEditable && isEditing) setIsEditing(false);
+  }, [event, isEditable, isEditing]);
+
   if (event === undefined) {
     return <EventDetailLoading />;
   }
@@ -221,6 +227,11 @@ export default function EventDetailPage() {
 
   const handleSave = async (data: EventEditFormData) => {
     try {
+      if (!canEdit) {
+        toast.error("This event can't be edited in its current state.");
+        setIsEditing(false);
+        return;
+      }
       // Do not send agreementAccepted to backend; convert to agreementAcceptedAt
       const { agreementAccepted, ...rest } = data;
       await updateDraft({

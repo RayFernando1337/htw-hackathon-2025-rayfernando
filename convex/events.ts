@@ -461,6 +461,7 @@ export const requestChanges = mutation({
     id: v.id("events"),
     message: v.string(),
     fieldsWithIssues: v.optional(v.array(v.string())),
+    reason: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -489,16 +490,17 @@ export const requestChanges = mutation({
       action: "status_change",
       fromValue: event.status,
       toValue: "changes_requested",
-      metadata: {},
+      metadata: { reason: args.reason, fieldsWithIssues: args.fieldsWithIssues ?? [] },
       timestamp: Date.now(),
     });
 
     // Notification to host
+    const fieldsNote = args.fieldsWithIssues && args.fieldsWithIssues.length > 0 ? ` Fields: ${args.fieldsWithIssues.join(", ")}.` : "";
     await ctx.db.insert("notifications", {
       userId: event.hostId,
       type: "status_change",
       eventId: args.id,
-      message: `Changes requested: ${args.message}`,
+      message: `Changes requested${args.reason ? ` (${args.reason})` : ""}: ${args.message}.${fieldsNote}`,
       createdAt: Date.now(),
     });
   },
