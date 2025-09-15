@@ -30,8 +30,6 @@ Phase 3 is ready to begin. Phase 2 is complete with all admin review functionali
 - [x] Admin "Mark as Published" functionality
 - [x] Publish event page for approved events
 - [x] Checklist UI with tabs, progress tracking, and due date warnings
-- [x] **ENHANCED**: Comprehensive admin status controls with full lifecycle management
-- [x] **ENHANCED**: Role-based UI that gives admins ultimate control even on their own events
 
 ## Remaining Tasks
 
@@ -44,17 +42,13 @@ Phase 3 is ready to begin. Phase 2 is complete with all admin review functionali
 2. **Dynamic Checklists**: Automatically generated based on event format (panel, mixer, workshop, general) with due dates
 3. **Publishing Flow**: Complete workflow from approval → Lu.ma URL → publish
 4. **Admin UX**: Enhanced review page with venue conflict warnings and status-based actions
-5. **🆕 Ultimate Admin Control**: Admins can move events to ANY status (forward/backward) with reasons and audit logging
-6. **🆕 Role-Based Logic**: Proper separation of host vs admin capabilities, admins override ownership restrictions
 
 ### Files Modified:
-- `convex/events.ts` - Added Lu.ma URL, checklist, venue conflict, publishing, and comprehensive admin status mutations
+- `convex/events.ts` - Added Lu.ma URL, checklist, venue conflict, and publishing mutations
 - `lib/checklist-templates.ts` - Checklist templates by event type
 - `app/dashboard/events/[id]/publish/` - New publishing page and checklist UI
 - `components/events/collision-warning.tsx` - Venue conflict detection component
 - `app/dashboard/review/[id]/page.tsx` - Enhanced admin review with publishing controls
-- `app/dashboard/events/[id]/page.tsx` - Role-based controls with admin override capabilities
-- `components/events/admin-status-controls.tsx` - **NEW** Comprehensive admin status management UI
 
 ## Next Steps
 
