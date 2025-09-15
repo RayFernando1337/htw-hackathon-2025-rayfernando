@@ -781,6 +781,58 @@ export const publish = mutation({
   },
 });
 
+// Admin: force set event status to any value (bypasses normal guards)
+export const adminSetStatus = mutation({
+  args: {
+    id: v.id("events"),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("submitted"),
+      v.literal("changes_requested"),
+      v.literal("resubmitted"),
+      v.literal("approved"),
+      v.literal("published")
+    ),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const admin = await ctx.db
+      .query("users")
+      .withIndex("byExternalId", (q) => q.eq("externalId", identity.subject))
+      .unique();
+    if (!admin || admin.role !== "admin") throw new Error("Unauthorized");
+
+    const event = await ctx.db.get(args.id);
+    if (!event) throw new Error("Event not found");
+
+    await ctx.db.patch(args.id, { status: args.status });
+
+    await ctx.db.insert("auditLog", {
+      eventId: args.id,
+      actorId: admin._id,
+      action: "status_change_forced",
+      fromValue: event.status,
+      toValue: args.status,
+      metadata: {},
+      timestamp: Date.now(),
+    });
+
+    // Notify host for visibility
+    await ctx.db.insert("notifications", {
+      userId: event.hostId,
+      type: "status_change",
+      eventId: args.id,
+      message: `Event status updated by admin to ${args.status}`,
+      createdAt: Date.now(),
+    });
+
+    return null;
+  },
+});
+
 // Basic checklist templates embedded for server-side generation
 const CHECKLIST_TEMPLATES: Record<
   string,

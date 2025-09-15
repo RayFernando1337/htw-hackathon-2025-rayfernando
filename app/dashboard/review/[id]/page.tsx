@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageContainer } from "@/components/ui/page-container";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Steps } from "@/components/ui/steps";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -40,12 +47,14 @@ export default function ReviewEventPage() {
   const approveEvent = useMutation(api.events.approve);
   const publishEvent = useMutation(api.events.publish);
   const updateLumaUrl = useMutation(api.events.updateLumaUrl);
+  const adminSetStatus = useMutation(api.events.adminSetStatus);
   const createThread = useMutation(api.feedback.createThread);
 
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [lumaInput, setLumaInput] = useState("");
   const [savingLuma, setSavingLuma] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [forcedStatus, setForcedStatus] = useState<string>("");
 
   const selectedThread = threads?.find((t: any) => t.fieldPath === selectedField);
   const selectedTitle = FIELD_GROUPS.flatMap((g) => g.fields).find(
@@ -155,6 +164,38 @@ export default function ReviewEventPage() {
                     }}
                   >
                     {savingLuma ? "Saving..." : "Save"}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Force status (admin only) */}
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground">Set Status (Admin)</div>
+                <div className="flex gap-2 items-center">
+                  <Select
+                    value={forcedStatus || (event?.status as string)}
+                    onValueChange={setForcedStatus}
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="submitted">Submitted</SelectItem>
+                      <SelectItem value="changes_requested">Changes Requested</SelectItem>
+                      <SelectItem value="resubmitted">Resubmitted</SelectItem>
+                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="published">Published</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="secondary"
+                    onClick={async () => {
+                      if (!forcedStatus) return;
+                      await adminSetStatus({ id: event._id, status: forcedStatus as any });
+                    }}
+                  >
+                    Update
                   </Button>
                 </div>
               </div>
