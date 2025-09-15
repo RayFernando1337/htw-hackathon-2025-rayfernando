@@ -1,38 +1,49 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { IconBrightness, type Icon } from "@tabler/icons-react"
+import { IconBrightness, type Icon } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 
+import { ModeToggle } from "@/components/mode-toggle";
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { ModeToggle } from "@/components/mode-toggle"
+  useSidebar,
+} from "@/components/ui/sidebar";
 
 export function NavSecondary({
   items,
   ...props
 }: {
   items: {
-    title: string
-    url: string
-    icon: Icon
-  }[]
+    title: string;
+    url: string;
+    icon: Icon;
+  }[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+  const router = useRouter();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleNavigation = (url: string) => {
+    router.push(url);
+    // Close mobile sidebar after navigation
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild>
-                <a href={item.url}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </a>
+              <SidebarMenuButton onClick={() => handleNavigation(item.url)}>
+                <item.icon />
+                <span>{item.title}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -41,12 +52,14 @@ export function NavSecondary({
               <label>
                 <IconBrightness />
                 Dark Mode
-                <span className="ml-auto"><ModeToggle/></span>
+                <span className="ml-auto">
+                  <ModeToggle />
+                </span>
               </label>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }
