@@ -288,11 +288,9 @@ export const getEventById = query({
     const event = await ctx.db.get(args.id);
     if (!event) return null;
 
-    // Verify ownership (hosts can only see their own events)
-    if (event.hostId !== user._id) {
-      // TODO: Allow admins to see all events
-      return null;
-    }
+    // Allow admins to see any event; hosts can see only their own
+    const isAdmin = user.role === "admin";
+    if (!isAdmin && event.hostId !== user._id) return null;
 
     return normalizeEvent(event);
   },
