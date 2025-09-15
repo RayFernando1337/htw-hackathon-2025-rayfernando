@@ -206,11 +206,14 @@ export const getMyEvents = query({
 
     if (!user) return [];
 
-    const events = await ctx.db
-      .query("events")
-      .withIndex("by_host", (q) => q.eq("hostId", user._id))
-      .order("desc")
-      .collect();
+    const isAdmin = user.role === "admin";
+    const events = isAdmin
+      ? await ctx.db.query("events").order("desc").collect()
+      : await ctx.db
+          .query("events")
+          .withIndex("by_host", (q) => q.eq("hostId", user._id))
+          .order("desc")
+          .collect();
 
     return events.map((event) => {
       const e = normalizeEvent(event);
@@ -365,10 +368,13 @@ export const getEventStats = query({
       };
     }
 
-    const events = await ctx.db
-      .query("events")
-      .withIndex("by_host", (q) => q.eq("hostId", user._id))
-      .collect();
+    const isAdmin = user.role === "admin";
+    const events = isAdmin
+      ? await ctx.db.query("events").collect()
+      : await ctx.db
+          .query("events")
+          .withIndex("by_host", (q) => q.eq("hostId", user._id))
+          .collect();
 
     const stats = events.reduce(
       (acc, event) => {
