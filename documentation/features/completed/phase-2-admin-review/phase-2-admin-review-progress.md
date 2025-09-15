@@ -4,15 +4,12 @@ Last Updated: 2025-09-15
 Specification: [`phase-2-admin-review-spec.md`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/documentation/features/active/phase-2-admin-review-spec.md)
 
 ## Overview
-
 Phase 2 is **COMPLETE** ✅. All core functionality implemented and tested. Mobile UX improvements and navigation fixes completed. Ready to move to Phase 3.
 
 ## Phase Completion Summary
-
 - Phase 2 (Admin Review): ✅ 100% — **COMPLETE**
 
 ## Recent Completions (Sept 15, 2025)
-
 - [x] Mobile sidebar dismissal regression fixed — [`app/dashboard/nav-main.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/app/dashboard/nav-main.tsx), [`app/dashboard/nav-secondary.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/app/dashboard/nav-secondary.tsx)
 - [x] Mobile event card overflow fixed — [`app/dashboard/events/page.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/app/dashboard/events/page.tsx)
 - [x] Mobile step indicator improved — [`components/ui/steps.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/components/ui/steps.tsx)
@@ -20,13 +17,11 @@ Phase 2 is **COMPLETE** ✅. All core functionality implemented and tested. Mobi
 - [x] Container overflow fixes applied globally
 
 ## Deferred Tasks (Optional Polish)
-
 - [ ] Optional: allow admins to mark feedback threads as resolved from the UI
 - [ ] Optional: inline field context preview in Feedback Drawer
 - [ ] Optional: "View full thread" modal and quick anchors to fields
 
 ## Completed
-
 - [x] Feedback schema (threads, comments, audit) with indexes
 - [x] Admin Review Queue (filters, counts)
 - [x] Event Review page (grouped fields, drawer)
@@ -40,12 +35,10 @@ Phase 2 is **COMPLETE** ✅. All core functionality implemented and tested. Mobi
 - [x] Stage indicator bar on host/admin pages — [`components/ui/steps.tsx`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/components/ui/steps.tsx)
 
 ## Next Steps
-
 - Kick off Phase 3 (Publishing) — move optional polish to backlog
 - Add "resolve thread" control with status update and audit (optional)
 - Inline field context preview in Feedback Drawer (optional)
 - “View full thread” modal + anchors (optional)
 
 ## Blockers/Issues
-
 - None currently. Performance is within targets; notifications are persisted server-side pending UI surfacing.
