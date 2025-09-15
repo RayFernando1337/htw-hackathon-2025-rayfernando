@@ -20,7 +20,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import { FunctionReturnType } from "convex/server";
 
-const statusConfig = {
+// Type for individual event from the getMyEvents query
+type Event = FunctionReturnType<typeof api.events.getMyEvents>[0];
+type EventStatus = Event["status"];
+
+const statusConfig: Record<EventStatus, { label: string; color: string; description: string }> = {
   draft: {
     label: "Draft",
     color: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
@@ -51,10 +55,10 @@ const statusConfig = {
     color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
     description: "Live and accepting registrations",
   },
-} as const;
+};
 
 // Type for individual event from the getMyEvents query
-type Event = FunctionReturnType<typeof api.events.getMyEvents>[0];
+type _Event = Event; // keep name stable for downstream references
 
 function EventCard({ event }: { event: Event }) {
   const config = statusConfig[event.status];
