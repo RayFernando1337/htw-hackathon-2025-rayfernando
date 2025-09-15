@@ -100,7 +100,8 @@ export default defineSchema({
   })
     .index("by_event", ["eventId"]) // query all threads for an event
     .index("by_event_field", ["eventId", "fieldPath"]) // locate specific field thread
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"]) // rarely used alone
+    .index("by_event_and_status", ["eventId", "status"]),
 
   feedbackComments: defineTable({
     threadId: v.id("feedbackThreads"),

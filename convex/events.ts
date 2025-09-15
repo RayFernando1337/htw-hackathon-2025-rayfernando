@@ -369,6 +369,31 @@ export const getReviewQueue = query({
   args: {
     status: v.optional(v.array(v.union(v.literal("submitted"), v.literal("resubmitted"), v.literal("all"))))
   },
+  returns: v.array(
+    v.object({
+      _id: v.id("events"),
+      _creationTime: v.number(),
+      hostId: v.id("users"),
+      status: v.union(
+        v.literal("draft"),
+        v.literal("submitted"),
+        v.literal("changes_requested"),
+        v.literal("resubmitted"),
+        v.literal("approved"),
+        v.literal("published")
+      ),
+      title: v.string(),
+      shortDescription: v.string(),
+      eventDate: v.string(),
+      venue: v.string(),
+      capacity: v.number(),
+      formats: v.array(v.string()),
+      submittedAt: v.optional(v.number()),
+      host: v.object({ _id: v.id("users"), name: v.string(), orgName: v.string() }),
+      hasOpenThreads: v.boolean(),
+      openThreadCount: v.number(),
+    })
+  ),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return [];
@@ -386,12 +411,15 @@ export const getReviewQueue = query({
     const events: any[] = [];
     const pushWithEnrichment = async (ev: any) => {
       const host = await ctx.db.get(ev.hostId);
-      // Count open threads
-      const threads = await ctx.db
-        .query("feedbackThreads")
-        .withIndex("by_event", (q) => q.eq("eventId", ev._id))
-        .collect();
-      const openThreadCount = threads.filter((t: any) => t.status === "open").length;
+      // Count open threads using composite index
+      const openThreadCount = (
+        await ctx.db
+          .query("feedbackThreads")
+          .withIndex("by_event_and_status", (q) =>
+            q.eq("eventId", ev._id).eq("status", "open")
+          )
+          .collect()
+      ).length;
       const h: any = host;
       events.push({
         ...ev,
@@ -433,6 +461,48 @@ export const getReviewQueue = query({
 
 export const getForReview = query({
   args: { id: v.id("events") },
+  returns: v.union(
+    v.null(),
+    v.object({
+      _id: v.id("events"),
+      _creationTime: v.number(),
+      hostId: v.id("users"),
+      status: v.union(
+        v.literal("draft"),
+        v.literal("submitted"),
+        v.literal("changes_requested"),
+        v.literal("resubmitted"),
+        v.literal("approved"),
+        v.literal("published")
+      ),
+      title: v.string(),
+      shortDescription: v.string(),
+      eventDate: v.string(),
+      venue: v.string(),
+      capacity: v.number(),
+      formats: v.array(v.string()),
+      isPublic: v.boolean(),
+      hasHostedBefore: v.boolean(),
+      targetAudience: v.string(),
+      planningDocUrl: v.optional(v.string()),
+      lumaUrl: v.optional(v.string()),
+      onCalendar: v.boolean(),
+      agreementAcceptedAt: v.optional(v.number()),
+      submittedAt: v.optional(v.number()),
+      approvedAt: v.optional(v.number()),
+      checklistTemplate: v.string(),
+      checklist: v.array(
+        v.object({
+          id: v.string(),
+          task: v.string(),
+          completed: v.boolean(),
+          dueDate: v.optional(v.string()),
+          section: v.string(),
+        })
+      ),
+      host: v.object({ _id: v.id("users"), name: v.string(), orgName: v.string() }),
+    })
+  ),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
@@ -450,9 +520,9 @@ export const getForReview = query({
 
     const h: any = host;
     return {
-    ...event,
+      ...event,
       host: { _id: h?._id, name: h?.name ?? "Host", orgName: h?.orgName ?? "" },
-  };
+    };
   },
 });
 

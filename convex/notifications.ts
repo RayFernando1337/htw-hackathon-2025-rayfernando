@@ -52,6 +52,17 @@ export const markAllRead = mutation({
 
 export const getForCurrentUser = query({
   args: {},
+  returns: v.array(
+    v.object({
+      _id: v.id("notifications"),
+      userId: v.id("users"),
+      type: v.string(),
+      eventId: v.optional(v.id("events")),
+      message: v.string(),
+      readAt: v.optional(v.number()),
+      createdAt: v.number(),
+    })
+  ),
   handler: async (ctx) => {
     const user = await getCurrentUserOrThrow(ctx);
     const list = await ctx.db

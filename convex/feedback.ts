@@ -232,11 +232,13 @@ export const getOpenThreadCountByEvent = query({
   args: { eventId: v.id("events") },
   returns: v.number(),
   handler: async (ctx, args) => {
-    const threads = await ctx.db
+    const openThreads = await ctx.db
       .query("feedbackThreads")
-      .withIndex("by_event", (q) => q.eq("eventId", args.eventId))
+      .withIndex("by_event_and_status", (q) =>
+        q.eq("eventId", args.eventId).eq("status", "open")
+      )
       .collect();
-    return threads.filter((t: any) => t.status === "open").length;
+    return openThreads.length;
   },
 });
 
