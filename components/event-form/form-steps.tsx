@@ -1,5 +1,6 @@
 "use client";
 
+import { VenueConflictWarning } from "@/components/events/collision-warning";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form";
@@ -97,7 +98,8 @@ export function BasicsStep({ form, onNext, isLoading }: StepProps) {
 
 // Step 2: Logistics
 export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
-  const { control, trigger } = form;
+  const { control, trigger, watch } = form;
+  const watchedValues = watch(["eventDate", "venue"]);
 
   const handleNext = async () => {
     const isValid = await trigger(["eventDate", "venue", "capacity"]);
@@ -170,6 +172,15 @@ export function LogisticsStep({ form, onNext, onPrev, isLoading }: StepProps) {
             </FieldWithHelp>
           )}
         />
+
+        {/* Show venue conflicts if both date and venue are set */}
+        {watchedValues[0] && watchedValues[1] && (
+          <VenueConflictWarning
+            eventDate={watchedValues[0]}
+            venue={watchedValues[1]}
+            className="mt-4"
+          />
+        )}
 
         {(onPrev || onNext) && (
           <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between">

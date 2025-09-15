@@ -230,6 +230,7 @@ export default function EventDetailPage() {
   const canEdit = event.status === "draft" || event.status === "changes_requested";
   const canDelete = event.status === "draft";
   const canSubmit = event.status === "draft" || event.status === "changes_requested";
+  const canPublish = event.status === "approved";
   const StatusIcon = config.icon;
 
   const handleSave = async (data: EventEditFormData) => {
@@ -313,6 +314,13 @@ export default function EventDetailPage() {
               <Button onClick={handleSubmit} className="sm:hidden">
                 Submit for Review
               </Button>
+            ) : !isEditing && canPublish ? (
+              <Button
+                onClick={() => router.push(`/dashboard/events/${eventId}/publish`)}
+                className="sm:hidden"
+              >
+                Publish Event
+              </Button>
             ) : null}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -331,6 +339,13 @@ export default function EventDetailPage() {
                 )}
                 {canSubmit && !isEditing && (
                   <DropdownMenuItem onClick={handleSubmit}>Submit for Review</DropdownMenuItem>
+                )}
+                {canPublish && !isEditing && (
+                  <DropdownMenuItem
+                    onClick={() => router.push(`/dashboard/events/${eventId}/publish`)}
+                  >
+                    Publish Event
+                  </DropdownMenuItem>
                 )}
                 {canDelete && (
                   <DropdownMenuItem asChild>
@@ -368,6 +383,11 @@ export default function EventDetailPage() {
                 </Button>
               )}
               {canSubmit && !isEditing && <Button onClick={handleSubmit}>Submit for Review</Button>}
+              {canPublish && !isEditing && (
+                <Button onClick={() => router.push(`/dashboard/events/${eventId}/publish`)}>
+                  Publish Event
+                </Button>
+              )}
               {canDelete && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
