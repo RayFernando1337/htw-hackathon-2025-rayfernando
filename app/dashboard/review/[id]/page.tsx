@@ -12,11 +12,22 @@ import { ReviewField } from "@/components/review/ReviewField";
 import { FeedbackDrawer } from "@/components/review/FeedbackDrawer";
 import { AuditTimeline } from "@/components/review/AuditTimeline";
 import { PageContainer } from "@/components/ui/page-container";
+import { Steps } from "@/components/ui/steps";
 
 export default function ReviewEventPage() {
   const params = useParams<{ id: string }>();
   const event = useQuery(api.events.getForReview, { id: params.id as any });
   const threads = useQuery(api.feedback.getThreadsByEvent, { eventId: params.id as any });
+  const threadsByField = useMemo(() => {
+    if (!threads) return {} as Record<string, any>;
+    const byField: Record<string, any> = {};
+    for (const t of threads as any[]) {
+      const last = t.lastActivity ?? (t.comments?.[t.comments.length - 1]?.createdAt ?? t.createdAt);
+      const cur = byField[t.fieldPath];
+      if (!cur || last > (cur._last || 0)) byField[t.fieldPath] = { ...t, _last: last };
+    }
+    return byField;
+  }, [threads]);
 
   const requestChanges = useMutation(api.events.requestChanges);
   const approveEvent = useMutation(api.events.approve);
@@ -86,6 +97,28 @@ export default function ReviewEventPage() {
               </div>
               <Badge variant="outline">{event?.status}</Badge>
             </div>
+            <div className="mt-3">
+              <Steps
+                steps={[
+                  { label: "Draft" },
+                  { label: "Under Review" },
+                  { label: "Changes Requested" },
+                  { label: "Approved" },
+                  { label: "Published" },
+                ]}
+                current={(() => {
+                  const map: Record<string, number> = {
+                    draft: 0,
+                    submitted: 1,
+                    resubmitted: 1,
+                    changes_requested: 2,
+                    approved: 3,
+                    published: 4,
+                  };
+                  return map[event?.status ?? "draft"];
+                })()}
+              />
+            </div>
           </CardHeader>
         </Card>
 
@@ -100,7 +133,7 @@ export default function ReviewEventPage() {
                   key={field.key}
                   field={field as any}
                   value={(event as any)?.[field.key]}
-                  thread={threads?.find((t: any) => t.fieldPath === field.key)}
+                  thread={threadsByField[field.key]}
                   onFeedback={() => setSelectedField(field.key)}
                 />
               ))}

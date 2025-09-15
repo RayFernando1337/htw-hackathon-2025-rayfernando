@@ -44,6 +44,7 @@ import {
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Steps } from "@/components/ui/steps";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import {
@@ -388,6 +389,26 @@ export default function EventDetailPage() {
       />
 
       {/* Status Alert */}
+      <div className="px-1">
+        <Steps
+          steps={[
+            { label: "Draft" },
+            { label: "Under Review" },
+            { label: "Changes Requested" },
+            { label: "Approved" },
+            { label: "Published" },
+          ]}
+          current={{
+            draft: 0,
+            submitted: 1,
+            resubmitted: 1,
+            changes_requested: 2,
+            approved: 3,
+            published: 4,
+          }[event.status] as number}
+        />
+      </div>
+
       <Alert>
         <StatusIcon className="h-4 w-4" />
         <AlertDescription>{config.description}</AlertDescription>
