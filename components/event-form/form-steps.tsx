@@ -71,7 +71,7 @@ export function BasicsStep({ form, onNext, isLoading }: StepProps) {
                   {...field}
                 />
                 <div className="text-xs text-muted-foreground text-right">
-                  {field.value?.length ?? 0}/500 • min 50
+                  {field.value?.length ?? 0}/1500 • min 50
                 </div>
               </div>
             </FieldWithHelp>
