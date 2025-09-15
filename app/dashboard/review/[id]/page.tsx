@@ -6,18 +6,24 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CheckCircle, MessageSquare } from "lucide-react";
 import { ReviewField } from "@/components/review/ReviewField";
 import { FeedbackDrawer } from "@/components/review/FeedbackDrawer";
 import { AuditTimeline } from "@/components/review/AuditTimeline";
 import { PageContainer } from "@/components/ui/page-container";
 import { Steps } from "@/components/ui/steps";
+import { statusToStepIndex } from "@/lib/events/status";
+import { FIELD_GROUPS } from "@/lib/events/fields";
+import type { FunctionReturnType } from "convex/server";
+import type { Id } from "@/convex/_generated/dataModel";
 
 export default function ReviewEventPage() {
   const params = useParams<{ id: string }>();
-  const event = useQuery(api.events.getForReview, { id: params.id as any });
-  const threads = useQuery(api.feedback.getThreadsByEvent, { eventId: params.id as any });
+  const event = useQuery(api.events.getForReview, { id: params.id as Id<"events"> });
+  const threads = useQuery(api.feedback.getThreadsByEvent, { eventId: params.id as Id<"events"> }) as
+    | FunctionReturnType<typeof api.feedback.getThreadsByEvent>
+    | undefined;
   const threadsByField = useMemo(() => {
     if (!threads) return {} as Record<string, any>;
     const byField: Record<string, any> = {};
@@ -34,32 +40,6 @@ export default function ReviewEventPage() {
   const createThread = useMutation(api.feedback.createThread);
 
   const [selectedField, setSelectedField] = useState<string | null>(null);
-
-  const FIELD_GROUPS = useMemo(() => [
-    {
-      title: "Basic Information",
-      fields: [
-        { key: "title", label: "Event Title", required: true },
-        { key: "shortDescription", label: "Description", required: true },
-      ],
-    },
-    {
-      title: "Logistics",
-      fields: [
-        { key: "eventDate", label: "Date & Time", required: true },
-        { key: "venue", label: "Venue", required: true },
-        { key: "capacity", label: "Capacity", required: true },
-      ],
-    },
-    {
-      title: "Audience & Format",
-      fields: [
-        { key: "formats", label: "Event Formats", required: true },
-        { key: "targetAudience", label: "Target Audience", required: true },
-        { key: "isPublic", label: "Public Event", required: true },
-      ],
-    },
-  ], []);
 
   const selectedThread = threads?.find((t: any) => t.fieldPath === selectedField);
   const selectedTitle = FIELD_GROUPS.flatMap((g) => g.fields).find((f) => f.key === selectedField)?.label;
@@ -106,17 +86,7 @@ export default function ReviewEventPage() {
                   { label: "Approved" },
                   { label: "Published" },
                 ]}
-                current={(() => {
-                  const map: Record<string, number> = {
-                    draft: 0,
-                    submitted: 1,
-                    resubmitted: 1,
-                    changes_requested: 2,
-                    approved: 3,
-                    published: 4,
-                  };
-                  return map[event?.status ?? "draft"];
-                })()}
+                current={statusToStepIndex((event?.status as any) || "draft")}
               />
             </div>
           </CardHeader>

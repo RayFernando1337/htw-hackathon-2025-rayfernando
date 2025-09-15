@@ -45,6 +45,7 @@ import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Steps } from "@/components/ui/steps";
+import { statusToStepIndex } from "@/lib/events/status";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import {
@@ -132,7 +133,7 @@ export default function EventDetailPage() {
   const updateDraft = useMutation(api.events.updateDraft);
   const submitEvent = useMutation(api.events.submitEvent);
   const deleteEvent = useMutation(api.events.deleteEvent);
-  const threads = useQuery(api.feedback.getThreadsByEvent, { eventId } as any);
+  const threads = useQuery(api.feedback.getThreadsByEvent, { eventId });
   const addComment = useMutation(api.feedback.addComment);
   const [pendingReply, setPendingReply] = useState<Record<string, boolean>>({});
 
@@ -398,14 +399,7 @@ export default function EventDetailPage() {
             { label: "Approved" },
             { label: "Published" },
           ]}
-          current={{
-            draft: 0,
-            submitted: 1,
-            resubmitted: 1,
-            changes_requested: 2,
-            approved: 3,
-            published: 4,
-          }[event.status] as number}
+          current={statusToStepIndex(event.status as any)}
         />
       </div>
 

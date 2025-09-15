@@ -389,7 +389,7 @@ export const getReviewQueue = query({
       // Count open threads
       const threads = await ctx.db
         .query("feedbackThreads")
-        .withIndex("by_event", (q: any) => q.eq("eventId", ev._id))
+        .withIndex("by_event", (q) => q.eq("eventId", ev._id))
         .collect();
       const openThreadCount = threads.filter((t: any) => t.status === "open").length;
       const h: any = host;
@@ -547,4 +547,3 @@ export const approve = mutation({
     });
   },
 });
-

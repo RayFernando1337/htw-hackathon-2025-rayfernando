@@ -8,7 +8,7 @@ export const get = query({
     const user = await getCurrentUserOrThrow(ctx);
     const draft = await ctx.db
       .query("formDrafts")
-      .withIndex("by_user_key", (q: any) => q.eq("userId", user._id).eq("key", args.key))
+      .withIndex("by_user_key", (q) => q.eq("userId", user._id).eq("key", args.key))
       .unique();
     return draft;
   },
@@ -20,7 +20,7 @@ export const upsert = mutation({
     const user = await getCurrentUserOrThrow(ctx);
     const existing = await ctx.db
       .query("formDrafts")
-      .withIndex("by_user_key", (q: any) => q.eq("userId", user._id).eq("key", args.key))
+      .withIndex("by_user_key", (q) => q.eq("userId", user._id).eq("key", args.key))
       .unique();
     if (existing) {
       await ctx.db.patch(existing._id, { data: args.data, updatedAt: Date.now() });
@@ -42,7 +42,7 @@ export const clear = mutation({
     const user = await getCurrentUserOrThrow(ctx);
     const existing = await ctx.db
       .query("formDrafts")
-      .withIndex("by_user_key", (q: any) => q.eq("userId", user._id).eq("key", args.key))
+      .withIndex("by_user_key", (q) => q.eq("userId", user._id).eq("key", args.key))
       .unique();
     if (existing) await ctx.db.delete(existing._id);
   },

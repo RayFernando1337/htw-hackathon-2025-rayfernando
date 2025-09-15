@@ -26,6 +26,9 @@ export const markRead = mutation({
   args: { id: v.id("notifications") },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const note = await ctx.db.get(args.id);
+    if (!note || note.userId !== user._id) throw new Error("Unauthorized");
     await ctx.db.patch(args.id, { readAt: Date.now() });
   },
 });

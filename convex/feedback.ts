@@ -77,7 +77,7 @@ export const createThread = mutation({
     // Clear any draft for this field by this admin
       const existingDraft = await ctx.db
       .query("feedbackDrafts")
-      .withIndex("by_event_field_author", (q: any) =>
+      .withIndex("by_event_field_author", (q) =>
         q.eq("eventId", args.eventId).eq("fieldPath", args.fieldPath).eq("authorId", user._id)
       )
       .unique();
@@ -152,22 +152,45 @@ export const getThreadsByEvent = query({
   args: {
     eventId: v.id("events"),
   },
+  returns: v.array(
+    v.object({
+      _id: v.id("feedbackThreads"),
+      eventId: v.id("events"),
+      fieldPath: v.string(),
+      status: v.union(v.literal("open"), v.literal("resolved")),
+      reason: v.optional(v.string()),
+      createdAt: v.number(),
+      resolvedAt: v.optional(v.number()),
+      lastActivity: v.number(),
+      comments: v.array(
+        v.object({
+          _id: v.id("feedbackComments"),
+          message: v.string(),
+          createdAt: v.number(),
+          author: v.object({ _id: v.id("users"), name: v.string() }),
+        })
+      ),
+    })
+  ),
   // Structured return for UI: thread with comments and author names
   handler: async (ctx, args) => {
-    const user = await ctx.auth.getUserIdentity();
-    if (!user) return [];
+    // Enforce access: only admins or the host of the event may view threads
+    const current = await getCurrentUserOrThrow(ctx);
+    const ev = await ctx.db.get(args.eventId);
+    if (!ev) return [];
+    const canView = current.role === "admin" || current._id === ev.hostId;
+    if (!canView) return [];
 
-    // Anyone authenticated can see threads if they can view the event via page-level gating.
     const threads = await ctx.db
       .query("feedbackThreads")
-      .withIndex("by_event", (q: any) => q.eq("eventId", args.eventId))
+      .withIndex("by_event", (q) => q.eq("eventId", args.eventId))
       .collect();
 
     const result = [] as any[];
     for (const t of threads) {
       const comments = await ctx.db
         .query("feedbackComments")
-        .withIndex("by_thread", (q: any) => q.eq("threadId", t._id))
+        .withIndex("by_thread", (q) => q.eq("threadId", t._id))
         .order("asc")
         .collect();
 
@@ -211,7 +234,7 @@ export const getOpenThreadCountByEvent = query({
   handler: async (ctx, args) => {
     const threads = await ctx.db
       .query("feedbackThreads")
-      .withIndex("by_event", (q: any) => q.eq("eventId", args.eventId))
+      .withIndex("by_event", (q) => q.eq("eventId", args.eventId))
       .collect();
     return threads.filter((t: any) => t.status === "open").length;
   },
@@ -219,10 +242,27 @@ export const getOpenThreadCountByEvent = query({
 
 export const getAuditByEvent = query({
   args: { eventId: v.id("events") },
+  returns: v.array(
+    v.object({
+      _id: v.id("auditLog"),
+      action: v.string(),
+      timestamp: v.number(),
+      fromValue: v.optional(v.any()),
+      toValue: v.optional(v.any()),
+      metadata: v.optional(
+        v.object({
+          fieldPath: v.optional(v.string()),
+          reason: v.optional(v.string()),
+          fieldsWithIssues: v.optional(v.array(v.string())),
+        })
+      ),
+      actor: v.object({ _id: v.id("users"), name: v.string() }),
+    })
+  ),
   handler: async (ctx, args) => {
     const items = await ctx.db
       .query("auditLog")
-      .withIndex("by_event", (q: any) => q.eq("eventId", args.eventId))
+      .withIndex("by_event", (q) => q.eq("eventId", args.eventId))
       .order("desc")
       .collect();
 

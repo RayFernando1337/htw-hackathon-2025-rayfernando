@@ -8,7 +8,7 @@ export const get = query({
     const user = await getCurrentUserOrThrow(ctx);
     const draft = await ctx.db
       .query("feedbackDrafts")
-      .withIndex("by_event_field_author", (q: any) =>
+      .withIndex("by_event_field_author", (q) =>
         q.eq("eventId", args.eventId).eq("fieldPath", args.fieldPath).eq("authorId", user._id)
       )
       .unique();
@@ -27,7 +27,7 @@ export const upsert = mutation({
     const user = await getCurrentUserOrThrow(ctx);
     const existing = await ctx.db
       .query("feedbackDrafts")
-      .withIndex("by_event_field_author", (q: any) =>
+      .withIndex("by_event_field_author", (q) =>
         q.eq("eventId", args.eventId).eq("fieldPath", args.fieldPath).eq("authorId", user._id)
       )
       .unique();
@@ -58,7 +58,7 @@ export const clear = mutation({
     const user = await getCurrentUserOrThrow(ctx);
     const existing = await ctx.db
       .query("feedbackDrafts")
-      .withIndex("by_event_field_author", (q: any) =>
+      .withIndex("by_event_field_author", (q) =>
         q.eq("eventId", args.eventId).eq("fieldPath", args.fieldPath).eq("authorId", user._id)
       )
       .unique();
