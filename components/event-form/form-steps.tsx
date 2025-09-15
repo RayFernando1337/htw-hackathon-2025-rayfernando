@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,8 +9,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { EVENT_FORMATS, EventEditFormData } from "@/lib/validations/event";
 import { UseFormReturn } from "react-hook-form";
-import { DatePicker, FieldWithHelp, MultiSelect } from "./field-with-help";
 import FeedbackBadge from "./FeedbackBadge";
+import { DatePicker, FieldWithHelp, MultiSelect } from "./field-with-help";
+import { HostAgreementField } from "./HostAgreementField";
 
 interface StepProps {
   form: UseFormReturn<EventEditFormData>;
@@ -71,7 +71,7 @@ export function BasicsStep({ form, onNext, isLoading }: StepProps) {
                   {...field}
                 />
                 <div className="text-xs text-muted-foreground text-right">
-                  {(field.value?.length ?? 0)}/500 • min 50
+                  {field.value?.length ?? 0}/500 • min 50
                 </div>
               </div>
             </FieldWithHelp>
@@ -414,33 +414,7 @@ export function ReviewStep({
         </div>
 
         {/* Agreement */}
-        <FormField
-          control={control}
-          name="agreementAccepted"
-          render={({ field, fieldState: { error } }) => (
-            <FieldWithHelp label="" error={error?.message} required>
-              <div className="flex items-start space-x-2">
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                <div className="grid gap-1.5 leading-none">
-                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    I accept the HTW Host Agreement *
-                  </label>
-                  <p className="text-xs text-muted-foreground">
-                    By submitting this event, I agree to follow HTW guidelines, provide a
-                    professional experience, and maintain the community standards.
-                    <a
-                      href="/host-agreement"
-                      target="_blank"
-                      className="text-primary hover:underline ml-1"
-                    >
-                      View full agreement
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </FieldWithHelp>
-          )}
-        />
+        <HostAgreementField form={form} />
 
         <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between">
           <Button

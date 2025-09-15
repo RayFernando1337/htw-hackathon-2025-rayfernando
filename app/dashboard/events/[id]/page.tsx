@@ -45,21 +45,22 @@ import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Steps } from "@/components/ui/steps";
-import { statusToStepIndex } from "@/lib/events/status";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { statusToStepIndex } from "@/lib/events/status";
 import {
   EventEditFormData,
   eventEditSchema,
   eventSchema,
-  getFieldErrors,
   FIELD_LABELS,
+  getFieldErrors,
 } from "@/lib/validations/event";
 
+import { AutoSaveIndicator } from "@/components/event-form/field-with-help";
 import { AudienceStep, BasicsStep, LogisticsStep } from "@/components/event-form/form-steps";
+import { HostAgreementField } from "@/components/event-form/HostAgreementField";
 import { DashboardSection, PageContainer, PageHeader } from "@/components/ui/page-container";
 import { useFormDraft } from "@/hooks/useFormDraft";
-import { AutoSaveIndicator } from "@/components/event-form/field-with-help";
 
 const statusConfig = {
   draft: {
@@ -144,7 +145,7 @@ export default function EventDetailPage() {
     const byField = new Map<string, any>();
     for (const t of open) {
       const key = t.fieldPath;
-      const last = t.lastActivity ?? (t.comments?.[t.comments.length - 1]?.createdAt ?? t.createdAt);
+      const last = t.lastActivity ?? t.comments?.[t.comments.length - 1]?.createdAt ?? t.createdAt;
       const current = byField.get(key);
       if (!current || last > (current._last || 0)) {
         byField.set(key, { ...t, _last: last });
@@ -175,7 +176,11 @@ export default function EventDetailPage() {
   // Autosave form draft while editing
   const draftKey = `event-edit:${eventId}`;
   const watched = form.watch();
-  const { status: draftStatus, restore, clear: clearFormDraft } = useFormDraft({
+  const {
+    status: draftStatus,
+    restore,
+    clear: clearFormDraft,
+  } = useFormDraft({
     key: draftKey,
     data: isEditing ? watched : undefined,
     enabled: Boolean(event) && isEditing,
@@ -221,7 +226,7 @@ export default function EventDetailPage() {
     );
   }
 
-  const config = statusConfig[event.status];
+  const config = statusConfig[event.status as keyof typeof statusConfig];
   const canEdit = event.status === "draft" || event.status === "changes_requested";
   const canDelete = event.status === "draft";
   const canSubmit = event.status === "draft" || event.status === "changes_requested";
@@ -415,23 +420,36 @@ export default function EventDetailPage() {
             <CardTitle>Feedback from Admin</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-sm text-muted-foreground">{openThreads.length} open item{openThreads.length > 1 ? "s" : ""} • sorted by most recent activity</div>
+            <div className="text-sm text-muted-foreground">
+              {openThreads.length} open item{openThreads.length > 1 ? "s" : ""} • sorted by most
+              recent activity
+            </div>
             {openThreads.map((t: any) => (
               <div key={t._id} className="border rounded p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="font-medium">Field: {t.fieldPath}</div>
                   <div className="flex items-center gap-2">
                     {t.reason && (
-                      <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-200">{t.reason}</Badge>
+                      <Badge
+                        variant="outline"
+                        className="bg-yellow-50 text-yellow-800 border-yellow-200"
+                      >
+                        {t.reason}
+                      </Badge>
                     )}
-                    <span className="text-xs text-muted-foreground">Updated {new Date((t.lastActivity ?? t.createdAt)).toLocaleString()}</span>
+                    <span className="text-xs text-muted-foreground">
+                      Updated {new Date(t.lastActivity ?? t.createdAt).toLocaleString()}
+                    </span>
                   </div>
                 </div>
 
                 <div className="mt-2 space-y-1">
                   {(t.comments ?? []).slice(-2).map((c: any) => (
                     <div key={c._id} className="text-sm text-muted-foreground">
-                      <span className="text-foreground font-medium">{c.author?.name || "User"}:</span> {c.message}
+                      <span className="text-foreground font-medium">
+                        {c.author?.name || "User"}:
+                      </span>{" "}
+                      {c.message}
                     </div>
                   ))}
                 </div>
@@ -459,7 +477,10 @@ export default function EventDetailPage() {
                         if (e.key === "Enter" && target.value.trim() && !pendingReply[t._id]) {
                           try {
                             setPendingReply((s) => ({ ...s, [t._id]: true }));
-                            await addComment({ threadId: t._id, message: target.value.trim() } as any);
+                            await addComment({
+                              threadId: t._id,
+                              message: target.value.trim(),
+                            } as any);
                             target.value = "";
                           } finally {
                             setPendingReply((s) => ({ ...s, [t._id]: false }));
@@ -471,11 +492,14 @@ export default function EventDetailPage() {
                       type="button"
                       disabled={!!pendingReply[t._id]}
                       onClick={async (e) => {
-                        const input = (e.currentTarget.previousSibling as HTMLInputElement);
+                        const input = e.currentTarget.previousSibling as HTMLInputElement;
                         if (input && input.value.trim() && !pendingReply[t._id]) {
                           try {
                             setPendingReply((s) => ({ ...s, [t._id]: true }));
-                            await addComment({ threadId: t._id, message: input.value.trim() } as any);
+                            await addComment({
+                              threadId: t._id,
+                              message: input.value.trim(),
+                            } as any);
                             input.value = "";
                           } finally {
                             setPendingReply((s) => ({ ...s, [t._id]: false }));
@@ -505,6 +529,9 @@ export default function EventDetailPage() {
             <BasicsStep form={form} />
             <LogisticsStep form={form} />
             <AudienceStep form={form} />
+
+            {/* Host Agreement acceptance while editing drafts */}
+            <HostAgreementField form={form} />
 
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
@@ -562,7 +589,7 @@ export default function EventDetailPage() {
               <div>
                 <h3 className="font-medium text-sm text-muted-foreground mb-2">Event Formats</h3>
                 <div className="flex flex-wrap gap-2">
-                  {event.formats.map((format) => (
+                  {event.formats.map((format: string) => (
                     <Badge key={format} variant="secondary">
                       {format}
                     </Badge>
