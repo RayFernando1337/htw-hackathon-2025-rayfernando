@@ -206,7 +206,7 @@ export const getMyEvents = query({
 
     if (!user) return [];
 
-    const isAdmin = user.role === "admin";
+    ;    const isAdmin = user.role === "admin";
     const events = isAdmin
       ? await ctx.db.query("events").order("desc").collect()
       : await ctx.db

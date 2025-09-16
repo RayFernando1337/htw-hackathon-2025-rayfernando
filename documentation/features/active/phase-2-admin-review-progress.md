@@ -1,6 +1,6 @@
 # Phase 2: Admin Review & Field-Level Feedback — Implementation Progress Tracker
 
-Last Updated: 2025-09-15  
+Last Updated: 2025-09-16  
 Specification: [`phase-2-admin-review-spec.md`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/documentation/features/active/phase-2-admin-review-spec.md)
 
 ## Overview
@@ -24,6 +24,13 @@ Phase 2 is **COMPLETE** ✅. All core functionality implemented and tested. Mobi
 - [ ] Optional: allow admins to mark feedback threads as resolved from the UI
 - [ ] Optional: inline field context preview in Feedback Drawer
 - [ ] Optional: "View full thread" modal and quick anchors to fields
+
+## Cross-Phase Updates
+
+- Admin visibility and overrides extended in Phase 3:
+  - Admin can see any event in detail view (`getEventById`)
+  - Admins see all events in dashboard list and stats (`getMyEvents`, `getEventStats`)
+  - Admin override controls added (status, field edits)
 
 ## Completed
 

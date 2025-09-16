@@ -22,6 +22,31 @@ Enable approved events to be published with Lu.ma integration and provide dynami
 
 ## Technical Implementation
 
+### Admin Overrides & Visibility
+
+- Admins can view any event and see all events in dashboard lists and stats
+  - Detail view access: `convex/events.ts` → `getEventById` (admins bypass host-only gate)
+  - Dashboard list + stats: `convex/events.ts` → `getMyEvents`, `getEventStats` (admins see all)
+- Admin status override at any time
+  - Mutation: `convex/events.ts` → `adminSetStatus` (records audit + notification)
+- Admin edit of any event fields regardless of status
+  - Mutation: `convex/events.ts` → `adminUpdateFields` (records audit)
+  - UI: Host event detail page exposes “Edit as Admin” mode to use server mutation
+- Admin publish controls
+  - Publish: `convex/events.ts` → `publish` (requires `lumaUrl`; records audit + notification)
+  - Unpublish: planned follow-up mutation `unpublish` (to set status from `published` → `approved`)
+- Admin conflict visibility
+  - Query: `convex/events.ts` → `getVenueConflictsById` (admins can query conflicts for any event)
+
+Acceptance criteria
+
+- [ ] As admin, I can open any event detail by URL and it loads
+- [ ] As admin, I see all events in `/dashboard/events` and counts include all
+- [ ] As admin, I can set status to any value from detail or review pages and see audit
+- [ ] As admin, I can edit any fields at any status from host detail page and changes persist
+- [ ] As admin, I can publish an approved event (with Lu.ma URL set) and host gets notified
+- [ ] (Follow-up) I can unpublish a published event and see audit
+
 ### 3.1 Checklist Templates Configuration
 
 ```typescript

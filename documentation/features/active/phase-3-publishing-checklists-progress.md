@@ -1,6 +1,6 @@
 # Phase 3: Publishing & Dynamic Checklists — Implementation Progress Tracker
 
-**Last Updated:** 2025-09-15  
+**Last Updated:** 2025-09-16  
 **Specification:** [`phase-3-publishing-checklists-spec.md`](file:///Users/ray/workspace/htw-hackathon-2025-rayfernando/documentation/features/active/phase-3-publishing-checklists-spec.md)
 
 ## Overview
@@ -11,7 +11,7 @@ Phase 3 is ready to begin. Phase 2 is complete with all admin review functionali
 
 | Phase   | Status | Completion | Notes                                     |
 | ------- | ------ | ---------- | ----------------------------------------- |
-| Phase 3 | 🚀     | 0%         | Ready to start - Phase 2 dependencies met |
+| Phase 3 | 🚀     | 75%        | Core flows working; notifications pending |
 
 ## Prerequisites Completed ✅
 
@@ -23,25 +23,48 @@ Phase 3 is ready to begin. Phase 2 is complete with all admin review functionali
 
 ## Current Tasks
 
-- [ ] Lu.ma URL field for approved events
-- [ ] Dynamic checklist generation based on event type
-- [ ] Checklist task completion tracking
+- [x] Lu.ma URL field for approved events
+  - Backend: `convex/events.ts` → `updateLumaUrl`
+  - UI: `app/dashboard/events/[id]/page.tsx` and `app/dashboard/review/[id]/page.tsx`
+- [x] Dynamic checklist generation based on event type
+  - Backend: `convex/events.ts` → `generateChecklistForEvent`
+- [x] Checklist task completion tracking
+  - Backend: `convex/events.ts` → `toggleChecklistItem`
+  - UI: `app/dashboard/events/[id]/page.tsx`
 - [ ] Collision detection for overlapping events
-- [ ] Admin "Mark as Published" functionality
+  - Implemented basic same-venue same-date detection
+    - Backend: `convex/events.ts` → `getVenueConflictsById`
+    - UI: conflicts panel in `app/dashboard/events/[id]/page.tsx`
+  - Next: add time-window and audience-overlap rules; consider composite index
+- [x] Admin "Mark as Published" functionality
+  - Backend: `convex/events.ts` → `publish`
+  - UI: Publish on `app/dashboard/review/[id]/page.tsx`; plus admin status override on host page
 - [ ] Email notifications with Resend integration
 
 ## Next Steps
 
-1. Start with Lu.ma URL field implementation
-2. Create checklist templates configuration
-3. Build checklist UI components
-4. Implement collision detection
-5. Add email notifications
-6. Complete publishing workflow
+1. Implement email notifications with Resend (approval, publish)
+   - Add internal action in `convex/notifications.ts` and schedule from mutations
+2. Enhance collision detection
+   - Add time-window overlap + audience similarity
+   - Schema: consider `events` composite index `by_venue_and_eventDate`
+3. Checklist polish
+   - Auto-generate on approval; expand templates beyond `general`
+4. Admin UX polish
+   - Add explicit Publish/Unpublish on host detail page admin card; onCalendar toggle
 
 ## Blockers/Issues
 
-None currently. All Phase 2 dependencies are resolved.
+None currently. All Phase 2 dependencies are resolved. Performance remains within targets.
+
+## Recent Completions
+
+- Admin controls
+  - Forced status changes: `convex/events.ts` → `adminSetStatus`; UI in `review/[id]` and `events/[id]`
+  - Admin field editing at any step: `convex/events.ts` → `adminUpdateFields`; UI uses admin edit mode on host page
+- Admin visibility
+  - Admin can view any event detail: `getEventById` ownership gate relaxed for admins
+  - Admin dashboard lists all events; stats aggregate all: `getMyEvents`, `getEventStats`
 
 ## Architecture Notes
 
